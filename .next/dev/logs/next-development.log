@@ -1,0 +1,422 @@
+[00:00:02.307] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:02.607] Server  LOG     ✓ Ready in 2s
+[00:00:04.522] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:04.761] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:05.830] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:05.897] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:20.796] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:20.916] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/login" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Downloads...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="pt-BR">
+                          <body
+                            className="inter_5972bc34-module__OU16Qa__className"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[00:02:59.783] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:11.572] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:38.422] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:47.552] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:55.410] Server  LOG     ✓ Compiled in 307ms
+[00:05:04.196] Server  LOG     ✓ Compiled in 102ms
+[00:07:16.982] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:17.150] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Downloads...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="pt-BR">
+                          <body
+                            className="inter_5972bc34-module__OU16Qa__className"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[00:07:23.711] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:32.574] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:33.105] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:45.754] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:09:59.122] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:13.640] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:49.702] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:56.657] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:03.212] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:10.334] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:43.664] Server  LOG     ✓ Compiled in 975ms
+[00:13:44.686] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:44.695] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:44.698] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:45.279] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:13:45.611] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:13:45.957] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:13:46.299] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:46.302] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:46.309] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:46.678] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:13:46.933] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:13:47.312] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:13:48.590] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:13:49.532] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:49.534] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:49.540] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:49.819] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:13:50.051] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:13:50.272] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:13:50.283] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:50.283] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:13:50.816] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:50.817] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:50.819] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:13:51.053] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:13:51.356] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:13:52.069] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:13:52.241] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:14:02.807] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:02.809] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:02.810] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:03.053] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:14:03.301] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:14:03.550] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:03.762] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:03.765] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:03.767] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:04.538] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:14:05.182] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:14:05.404] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:05.500] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:05.503] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:05.505] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:05.760] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:14:05.986] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:14:06.215] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:06.830] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:06.830] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:06.862] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:06.862] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:12.525] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:14:12.548] Server  LOG     ✓ Compiled in 208ms
+[00:14:12.621] Browser ERROR   unhandledRejection: Error: No link element found for chunk /_next/static/chunks/%5Broot-of-the-server%5D__55e3bd78._.css
+[00:14:13.346] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:13.347] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:13.348] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:13.698] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:14:13.961] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:14:14.216] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:14.566] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:14.569] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:14.572] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:14:14.863] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:14:15.197] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:14:15.462] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:16.086] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:16.087] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:14:16.105] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:16.106] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:15:16.416] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: "Início", href: ..., icon: {$$typeof: ..., render: ...}}
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:15:16.418] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: ..., icon: {$$typeof: ..., render: ...}}
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:15:16.420] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  {label: ..., href: "/alunos", icon: {$$typeof: ..., render: ...}}
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[00:15:16.717] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function House}
+                          ^^^^^^^^^^^^^^
+[00:15:17.010] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Settings}
+                          ^^^^^^^^^^^^^^^^^
+[00:15:17.351] Server  ERROR   ⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:15:17.804] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:17.804] Browser ERROR   uncaughtError: Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function Users}
+                          ^^^^^^^^^^^^^^
+[00:15:51.937] Server  LOG     ✓ Compiled in 430ms
+[00:15:54.573] Server  ERROR   ⨯ Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+[00:15:55.095] Server  ERROR   ⨯ Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+[00:15:55.630] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:55.785] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:56.012] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:15:56.012] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:15:56.012] Browser ERROR   uncaughtError: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Sidebar`.
+[00:15:56.121] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:15:56.121] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:15:56.121] Browser ERROR   uncaughtError: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Sidebar`.
+[00:16:33.397] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:16:33.399] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:16:33.403] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:16:33.422] Server  LOG     ✓ Compiled in 324ms
+[00:16:35.063] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:16:35.283] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:16:35.315] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:35.435] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:41.330] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:41.590] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:42.004] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:42.242] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:43.702] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:43.702] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:43.702] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:43.926] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:51.781] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:51.781] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:51.781] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:51.781] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:54.161] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:54.724] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:59.799] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:59.799] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:16:59.800] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:17:00.022] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:24.987] Server  LOG     ✓ Compiled in 85ms
+[00:19:27.485] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.485] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.485] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.485] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.536] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.536] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.536] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:19:27.536] Browser ERROR   Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /super-admin
+[00:20:30.350] Server  LOG     ✓ Compiled in 371ms
+[00:20:32.314] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:20:33.310] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:20:33.588] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/alunos" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Downloads...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="pt-BR">
+                          <body
+                            className="inter_5972bc34-module__OU16Qa__className"
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[00:20:40.801] Browser ERROR   ./Downloads/Sistema de Gestão Socioemocional/app/super-admin/layout.tsx:43:5
+Parsing ecmascript source code failed
+  41 |         </main>
+  42 |     </div>
+> 43 |     );
+     |     ^
+  44 | }
+  45 |
+
+Expression expected
+[00:20:40.801] Browser ERROR   ./Downloads/Sistema de Gestão Socioemocional/app/super-admin/layout.tsx:43:5
+Parsing ecmascript source code failed
+  41 |         </main>
+  42 |     </div>
+> 43 |     );
+     |     ^
+  44 | }
+  45 |
+
+Expression expected
+[00:20:58.482] Server  LOG     ✓ Compiled in 85ms
+[00:24:40.063] Server  LOG     ✓ Compiled in 165ms
+[00:24:49.985] Server  LOG     ✓ Compiled in 138ms

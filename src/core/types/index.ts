@@ -5,9 +5,9 @@
 // --- Enums ---
 
 export enum GradeLevel {
-  PRIMEIRO_ANO = '1_ANO_EM',
-  SEGUNDO_ANO = '2_ANO_EM',
-  TERCEIRO_ANO = '3_ANO_EM',
+  PRIMEIRO_ANO = 'ANO_1_EM',
+  SEGUNDO_ANO = 'ANO_2_EM',
+  TERCEIRO_ANO = 'ANO_3_EM',
 }
 
 export enum RiskTier {

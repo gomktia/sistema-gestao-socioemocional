@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Yoda/Downloads/Sistema%20de%20Gest%C3%A3o%20Socioemocional/app/page.tsx"],"sourcesContent":["export default function Home() {\r\n    return (\r\n        <main className=\"flex min-h-screen items-center justify-center\">\r\n            <h1 className=\"text-2xl font-bold\">Gestao Socioemocional</h1>\r\n        </main>\r\n    );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACpB,qBACI,qSAAC;QAAK,WAAU;kBACZ,cAAA,qSAAC;YAAG,WAAU;sBAAqB;;;;;;;;;;;AAG/C"}}]
+}

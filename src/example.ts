@@ -122,16 +122,14 @@ console.log('\n' + '='.repeat(70));
 console.log('DEMONSTRAÇÃO RBAC: Mesmo perfil visto por diferentes papéis');
 console.log('='.repeat(70));
 
-const profileObj = profile as unknown as Record<string, unknown>;
-
 console.log('\n[ALUNO vê]:');
-const studentView = filterProfileByRole(profileObj, UserRole.STUDENT);
+const studentView = filterProfileByRole(profile, UserRole.STUDENT);
 console.log('  Campos visíveis:', Object.keys(studentView).join(', '));
 
 console.log('\n[PROFESSOR vê]:');
-const teacherView = filterProfileByRole(profileObj, UserRole.TEACHER);
+const teacherView = filterProfileByRole(profile, UserRole.TEACHER);
 console.log('  Campos visíveis:', Object.keys(teacherView).join(', '));
 
 console.log('\n[PSICÓLOGO vê]:');
-const psychView = filterProfileByRole(profileObj, UserRole.PSYCHOLOGIST);
+const psychView = filterProfileByRole(profile, UserRole.PSYCHOLOGIST);
 console.log('  Campos visíveis:', Object.keys(psychView).join(', '));

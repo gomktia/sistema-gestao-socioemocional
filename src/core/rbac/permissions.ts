@@ -129,40 +129,38 @@ export function getPermissions(role: UserRole): Permission[] {
 
 /**
  * Filtra os dados do perfil do aluno com base no papel do usuário.
- * Garante que professores não vejam dados clínicos e alunos não vejam riscos.
+ * Usa padrão ALLOWLIST: só retorna campos explicitamente permitidos.
+ * Campos novos ficam ocultos por padrão (seguro por design).
  */
 export function filterProfileByRole(
-  profile: Record<string, unknown>,
+  profile: import('../types').StudentProfile,
   viewerRole: UserRole
 ): Record<string, unknown> {
-  const filtered = { ...profile };
+  // Deep clone para não mutar o original
+  const safe = JSON.parse(JSON.stringify(profile));
 
   if (viewerRole === UserRole.STUDENT) {
-    // Aluno só vê suas forças
-    delete filtered.externalizing;
-    delete filtered.internalizing;
-    delete filtered.overallTier;
-    delete filtered.overallColor;
-    delete filtered.gradeAlerts;
-    delete filtered.interventionSuggestions;
-    delete filtered.developmentAreas;
-    return filtered;
+    // Aluno: APENAS suas forças de assinatura e todas as forças
+    return {
+      allStrengths: safe.allStrengths,
+      signatureStrengths: safe.signatureStrengths,
+    };
   }
 
   if (viewerRole === UserRole.TEACHER) {
-    // Professor vê tier/cor mas não detalhes de score nem sugestões clínicas
-    delete filtered.interventionSuggestions;
-    if (filtered.externalizing && typeof filtered.externalizing === 'object') {
-      const ext = filtered.externalizing as Record<string, unknown>;
-      filtered.externalizing = { tier: ext.tier, color: ext.color, label: ext.label };
-    }
-    if (filtered.internalizing && typeof filtered.internalizing === 'object') {
-      const int = filtered.internalizing as Record<string, unknown>;
-      filtered.internalizing = { tier: int.tier, color: int.color, label: int.label };
-    }
-    return filtered;
+    // Professor: tier/cor (sem scores numéricos), forças, alertas (sem intervenções clínicas)
+    return {
+      externalizing: { tier: safe.externalizing.tier, color: safe.externalizing.color, label: safe.externalizing.label },
+      internalizing: { tier: safe.internalizing.tier, color: safe.internalizing.color, label: safe.internalizing.label },
+      overallTier: safe.overallTier,
+      overallColor: safe.overallColor,
+      allStrengths: safe.allStrengths,
+      signatureStrengths: safe.signatureStrengths,
+      developmentAreas: safe.developmentAreas,
+      gradeAlerts: safe.gradeAlerts,
+    };
   }
 
-  // Manager, Psychologist, Counselor, Admin → acesso completo
-  return filtered;
+  // Manager, Psychologist, Counselor, Admin → perfil completo
+  return safe;
 }

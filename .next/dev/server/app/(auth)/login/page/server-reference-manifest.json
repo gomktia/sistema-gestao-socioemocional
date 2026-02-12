@@ -1,0 +1,20 @@
+{
+  "node": {
+    "40bd099504e339a381dc155f8330001595fa7d740e": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": "[project]/Downloads/Sistema de Gestão Socioemocional/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/Downloads/Sistema de Gestão Socioemocional/app/(auth)/login/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "login",
+          "filename": "Downloads/Sistema de Gestão Socioemocional/app/(auth)/login/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "exportedName": "login",
+      "filename": "Downloads/Sistema de Gestão Socioemocional/app/(auth)/login/actions.ts"
+    }
+  },
+  "edge": {}
+}

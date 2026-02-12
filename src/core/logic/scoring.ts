@@ -189,6 +189,22 @@ const INTERVENTION_MATRIX: Record<string, {
     strategy: 'Inserção gradual em projetos de grupo com papéis definidos. Mentoria "padrinho" com aluno de 2ª série que tem alta Amabilidade.',
     rationale: 'A solidão se rompe por conexão com propósito. Se o aluno tem força em cidadania ou liderança, dar-lhe um papel no grupo.',
   },
+  // Riscos externalizantes sem mapeamento anterior (I4)
+  'Furto': {
+    leverageStrengths: [CharacterStrength.IMPARCIALIDADE, CharacterStrength.AUTENTICIDADE, CharacterStrength.PRUDENCIA],
+    strategy: 'Trabalho de ética e responsabilidade: dilemas morais em grupo, restituição simbólica, reflexão sobre consequências com foco em valores pessoais.',
+    rationale: 'Imparcialidade e autenticidade ajudam o aluno a internalizar normas sociais; prudência desenvolve a reflexão antes da ação.',
+  },
+  'Mentira': {
+    leverageStrengths: [CharacterStrength.AUTENTICIDADE, CharacterStrength.IMPARCIALIDADE, CharacterStrength.INTELIGENCIA_SOCIAL],
+    strategy: 'Círculos restaurativos de confiança + exercícios de comunicação assertiva. Valorizar a autenticidade como força, não como fraqueza.',
+    rationale: 'A mentira frequentemente vem da percepção de que a verdade é perigosa. Reforçar autenticidade como virtude reduz a necessidade de dissimulação.',
+  },
+  'Rejeição pelos colegas': {
+    leverageStrengths: [CharacterStrength.CIDADANIA, CharacterStrength.BONDADE, CharacterStrength.INTELIGENCIA_SOCIAL],
+    strategy: 'Programa de inclusão com papel definido em projetos coletivos. Mentoria "padrinho" com aluno sociável. Treino de habilidades sociais (Del Prette).',
+    rationale: 'A rejeição se combate com pertencimento. Se o aluno tem cidadania ou bondade, dar-lhe função visível no grupo constrói aceitação.',
+  },
   // Riscos externalizantes × forças que podem mitigar
   'Indisciplina': {
     leverageStrengths: [CharacterStrength.LIDERANCA, CharacterStrength.CRIATIVIDADE, CharacterStrength.BRAVURA],
@@ -349,10 +365,13 @@ export function generateInterventionSuggestions(
 
   // Mapear itens SRSS-IE elevados (>= 2) aos riscos correspondentes
   const riskItemMapping: { item: number; riskLabel: string }[] = [
+    { item: 1,  riskLabel: 'Furto' },
+    { item: 2,  riskLabel: 'Mentira' },
     { item: 3,  riskLabel: 'Indisciplina' },
+    { item: 4,  riskLabel: 'Rejeição pelos colegas' },
+    { item: 5,  riskLabel: 'Baixo desempenho' },
     { item: 6,  riskLabel: 'Atitude desafiadora' },
     { item: 7,  riskLabel: 'Agressividade' },
-    { item: 5,  riskLabel: 'Baixo desempenho' },
     { item: 8,  riskLabel: 'Apatia emocional' },
     { item: 9,  riskLabel: 'Timidez/Retraimento' },
     { item: 10, riskLabel: 'Tristeza/Depressão' },
@@ -369,16 +388,18 @@ export function generateInterventionSuggestions(
 
     // Encontrar a melhor força de assinatura que casa com a intervenção
     const matchingStrength = matrix.leverageStrengths.find(s => topStrengths.has(s));
-    if (matchingStrength) {
-      const strengthDef = VIA_STRENGTH_MAP.find(d => d.strength === matchingStrength);
-      suggestions.push({
-        targetRisk: mapping.riskLabel,
-        leverageStrength: matchingStrength,
-        strengthLabel: strengthDef?.label ?? matchingStrength,
-        strategy: matrix.strategy,
-        rationale: matrix.rationale,
-      });
-    }
+    // Fallback (I5): se nenhuma força de assinatura casa, usar a primeira força sugerida pela matriz
+    const selectedStrength = matchingStrength ?? matrix.leverageStrengths[0];
+    const strengthDef = VIA_STRENGTH_MAP.find(d => d.strength === selectedStrength);
+    suggestions.push({
+      targetRisk: mapping.riskLabel,
+      leverageStrength: selectedStrength,
+      strengthLabel: strengthDef?.label ?? selectedStrength,
+      strategy: matrix.strategy,
+      rationale: matchingStrength
+        ? matrix.rationale
+        : `${matrix.rationale} (Nota: nenhuma das forças de assinatura do aluno coincide com as forças ideais para esta intervenção. Recomenda-se desenvolver ${strengthDef?.label ?? selectedStrength} como parte do plano.)`,
+    });
   }
 
   return suggestions;

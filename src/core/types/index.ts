@@ -42,6 +42,13 @@ export enum ScreeningWindow {
   FINAL = 'FINAL',               // Outubro - Meio do 2º semestre
 }
 
+export enum OrganizationType {
+  EDUCATIONAL = 'EDUCATIONAL',
+  MILITARY = 'MILITARY',
+  CORPORATE = 'CORPORATE',
+  SPORTS = 'SPORTS',
+}
+
 // --- VIA Character Strengths ---
 
 export enum VirtueCategory {

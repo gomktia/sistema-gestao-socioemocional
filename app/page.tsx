@@ -7,7 +7,10 @@ export default async function Home() {
 
     if (user) {
         const homePath = getHomeForRole(user.role);
-        redirect(homePath);
+        // Evitar loop infinito se a home for '/'
+        if (homePath && homePath !== '/') {
+            redirect(homePath);
+        }
     }
 
     return <LandingPage />;

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { SRSSGrid } from '@/components/teacher/SRSSGrid';
 
 export const metadata = {
@@ -11,32 +11,28 @@ export const metadata = {
 export default async function TriagemPage() {
     const user = await getCurrentUser();
 
-    // Apenas professores e cargos técnicos podem acessar a triagem
     const allowedRoles = [UserRole.TEACHER, UserRole.PSYCHOLOGIST, UserRole.COUNSELOR, UserRole.MANAGER, UserRole.ADMIN];
     if (!user || !allowedRoles.includes(user.role)) {
         redirect('/');
     }
 
-    const supabase = await createClient();
+    const students = await prisma.student.findMany({
+        where: { tenantId: user.tenantId, isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+    });
 
-    // Obter todos os alunos do tenant (em produção aqui filtraria pela turma do professor)
-    const { data: students } = await supabase
-        .from('students')
-        .select('id, name')
-        .eq('tenantId', user.tenantId)
-        .eq('isActive', true)
-        .order('name');
-
-    // Obter avaliações SRSS-IE existentes para o ano atual
-    const { data: assessments } = await supabase
-        .from('assessments')
-        .select('studentId, rawAnswers, overallTier')
-        .eq('tenantId', user.tenantId)
-        .eq('type', 'SRSS_IE')
-        .eq('academicYear', new Date().getFullYear());
+    const assessments = await prisma.assessment.findMany({
+        where: {
+            tenantId: user.tenantId,
+            type: 'SRSS_IE',
+            academicYear: new Date().getFullYear(),
+        },
+        select: { studentId: true, rawAnswers: true, overallTier: true },
+    });
 
     const existingData: Record<string, any> = {};
-    assessments?.forEach(a => {
+    assessments.forEach(a => {
         existingData[a.studentId] = {
             answers: a.rawAnswers,
             tier: a.overallTier
@@ -60,7 +56,7 @@ export default async function TriagemPage() {
                 </p>
             </div>
 
-            <SRSSGrid students={students || []} existingData={existingData} />
+            <SRSSGrid students={students} existingData={existingData} />
         </div>
     );
 }

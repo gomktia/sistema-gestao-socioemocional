@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@core/types';
+import { redirect } from 'next/navigation';
 
 export interface AppUser {
     id: string;
@@ -8,41 +10,44 @@ export interface AppUser {
     role: UserRole;
     tenantId: string;
     studentId: string | null;
+    organizationType: string;
 }
 
 /**
  * Obtém o usuário atual autenticado e seus metadados do banco de dados (RBAC).
+ * Usa Supabase Auth para verificar a sessão e Prisma para consultar o banco,
+ * evitando problemas com RLS do Supabase.
  */
 export async function getCurrentUser(): Promise<AppUser | null> {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
+    const userSelect = {
+        id: true, email: true, name: true, role: true,
+        tenantId: true, studentId: true, supabaseUid: true,
+        tenant: { select: { organizationType: true } },
+    } as const;
+
     // 1. Tentar buscar por UID (já vinculado)
-    let { data: dbUser } = await supabase
-        .from('users')
-        .select('id, email, name, role, tenantId, studentId, supabaseUid')
-        .eq('supabaseUid', user.id)
-        .single();
+    let dbUser = await prisma.user.findFirst({
+        where: { supabaseUid: user.id },
+        select: userSelect,
+    });
 
     // 2. Se não encontrou por UID, tentar por Email (Primeiro acesso)
-    if (!dbUser) {
-        const { data: matchedEmail } = await supabase
-            .from('users')
-            .select('id, email, name, role, tenantId, studentId, supabaseUid')
-            .eq('email', user.email)
-            .single();
+    if (!dbUser && user.email) {
+        dbUser = await prisma.user.findFirst({
+            where: { email: user.email },
+            select: userSelect,
+        });
 
-        if (matchedEmail) {
+        if (dbUser) {
             // Vincular o UID do Supabase ao registro no banco
-            const { data: updatedUser } = await supabase
-                .from('users')
-                .update({ supabaseUid: user.id })
-                .eq('id', matchedEmail.id)
-                .select()
-                .single();
-
-            dbUser = updatedUser;
+            await prisma.user.update({
+                where: { id: dbUser.id },
+                data: { supabaseUid: user.id },
+            });
         }
     }
 
@@ -55,6 +60,7 @@ export async function getCurrentUser(): Promise<AppUser | null> {
         role: dbUser.role as UserRole,
         tenantId: dbUser.tenantId,
         studentId: dbUser.studentId,
+        organizationType: dbUser.tenant?.organizationType ?? 'EDUCATIONAL',
     };
 }
 
@@ -91,6 +97,18 @@ const ROUTE_ACCESS: Record<string, string[]> = {
 /**
  * Verifica se o usuário com determinado Role pode acessar a rota.
  */
+/**
+ * Exige que o usuário autenticado tenha role ADMIN.
+ * Redireciona para / se não autorizado.
+ */
+export async function requireSuperAdmin(): Promise<AppUser> {
+    const user = await getCurrentUser();
+    if (!user || user.role !== UserRole.ADMIN) {
+        redirect('/');
+    }
+    return user;
+}
+
 export function canAccessRoute(role: string, pathname: string): boolean {
     const matchedRoute = Object.keys(ROUTE_ACCESS).find(
         (route) => pathname === route || pathname.startsWith(route + '/')

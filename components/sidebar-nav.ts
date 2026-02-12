@@ -22,6 +22,7 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: 'Mapa de Risco', href: '/turma', iconName: 'ClipboardList' },
         { label: 'Lista de Alunos', href: '/alunos', iconName: 'Users' },
         { label: 'Intervenções (C2)', href: '/intervencoes', iconName: 'Layers' },
+        { label: 'Notificações', href: '/notificacoes', iconName: 'HeartPulse' },
         { label: 'Relatórios', href: '/relatorios', iconName: 'FileText' },
     ],
     COUNSELOR: [
@@ -29,6 +30,7 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: 'Mapa de Risco', href: '/turma', iconName: 'ClipboardList' },
         { label: 'Alunos', href: '/alunos', iconName: 'Users' },
         { label: 'Intervenções (C2)', href: '/intervencoes', iconName: 'Layers' },
+        { label: 'Notificações', href: '/notificacoes', iconName: 'HeartPulse' },
     ],
     MANAGER: [
         { label: 'Início', href: '/', iconName: 'Home' },
@@ -36,6 +38,7 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: 'Mapa de Risco', href: '/turma', iconName: 'ClipboardList' },
         { label: 'Alunos', href: '/alunos', iconName: 'Users' },
         { label: 'Intervenções (C2)', href: '/intervencoes', iconName: 'Layers' },
+        { label: 'Notificações', href: '/notificacoes', iconName: 'HeartPulse' },
     ],
     ADMIN: [
         { label: 'Visão Geral', href: '/super-admin', iconName: 'Home' },

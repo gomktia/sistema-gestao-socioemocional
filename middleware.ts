@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
-const PUBLIC_PATHS = ['/login', '/marketing', '/subscription-expired'];
+const PUBLIC_PATHS = ['/login', '/marketing', '/subscription-expired', '/demo-setup'];
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const { user, supabase, response } = await updateSession(request);
+    const { user, response } = await updateSession(request);
 
     // 2. Proteção de Rotas (Auth)
     if (!user && !PUBLIC_PATHS.some((p) => pathname.startsWith(p)) && pathname !== '/') {
@@ -24,36 +24,16 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // 3. Verificação de Assinatura (Bloqueio SaaS)
-    if (user && !pathname.startsWith('/subscription-expired') && !pathname.startsWith('/login')) {
-        // Buscar tenantId do usuário (usando metadata do user ou buscando rápido)
-        const { data: dbUser } = await supabase
-            .from('users')
-            .select('tenantId')
-            .eq('supabaseUid', user.id)
-            .single();
-
-        if (dbUser?.tenantId) {
-            const { data: tenant } = await supabase
-                .from('tenants')
-                .select('subscriptionStatus')
-                .eq('id', dbUser.tenantId)
-                .single();
-
-            if (tenant && tenant.subscriptionStatus !== 'active') {
-                const url = request.nextUrl.clone();
-                url.pathname = '/subscription-expired';
-                return NextResponse.redirect(url);
-            }
-        }
-    }
-
-    // 4. Redirecionamento de Login
+    // 3. Redirecionamento de Login (se já autenticado, sai do /login)
     if (user && pathname.startsWith('/login')) {
         const url = request.nextUrl.clone();
         url.pathname = '/';
         return NextResponse.redirect(url);
     }
+
+    // Nota: A verificação de assinatura (subscription) é feita no PortalLayout
+    // usando Prisma, pois o middleware Edge não suporta Prisma e o Supabase Client
+    // é bloqueado por RLS nas tabelas do aplicativo.
 
     return response;
 }

@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { TierBadge } from '@/components/domain/TierBadge';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { UserSearch, ChevronRight, Filter } from 'lucide-react';
+import { UserSearch, ChevronRight } from 'lucide-react';
 
 export const metadata = {
     title: 'Gestão de Alunos',
@@ -19,23 +19,22 @@ export default async function AlunosPage() {
         redirect('/');
     }
 
-    const supabase = await createClient();
+    const students = await prisma.student.findMany({
+        where: { tenantId: user.tenantId, isActive: true },
+        select: { id: true, name: true, grade: true },
+        orderBy: { name: 'asc' },
+    });
 
-    const { data: students } = await supabase
-        .from('students')
-        .select('id, name, grade')
-        .eq('tenantId', user.tenantId)
-        .eq('isActive', true)
-        .order('name');
+    const assessments = await prisma.assessment.findMany({
+        where: {
+            tenantId: user.tenantId,
+            type: 'SRSS_IE',
+            academicYear: new Date().getFullYear(),
+        },
+        select: { studentId: true, overallTier: true },
+    });
 
-    const { data: assessments } = await supabase
-        .from('assessments')
-        .select('studentId, overallTier')
-        .eq('tenantId', user.tenantId)
-        .eq('type', 'SRSS_IE')
-        .eq('academicYear', new Date().getFullYear());
-
-    const tierMap = new Map((assessments || []).map(a => [a.studentId, a.overallTier]));
+    const tierMap = new Map(assessments.map(a => [a.studentId, a.overallTier]));
 
     return (
         <div className="space-y-6">
@@ -47,7 +46,7 @@ export default async function AlunosPage() {
             </div>
 
             <div className="grid gap-3">
-                {students?.map((student) => {
+                {students.map((student) => {
                     const tier = tierMap.get(student.id);
                     return (
                         <Link key={student.id} href={`/alunos/${student.id}`}>

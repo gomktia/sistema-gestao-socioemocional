@@ -12,29 +12,39 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function createAdminUser() {
-    const email = 'geisonhoehr@gmail.com';
-    const password = '123456';
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    console.log(`Creating Auth User: ${email}`);
+async function createTestUsers() {
+    // Only retry the failed ones
+    const users = [
+        { email: 'admin@escola.com', password: '123456' },
+        { email: 'professor@escola.com', password: '123456' },
+        { email: 'aluno@escola.com', password: '123456' }
+    ];
 
-    const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-    });
+    console.log(`Retrying creation of ${users.length} Test Users in Supabase Auth...`);
 
-    if (error) {
-        if (error.message.includes('already registered')) {
-            console.log('User already exists in Supabase Auth.');
+    for (const u of users) {
+        console.log(`Creating Auth User: ${u.email}`);
+
+        // Add delay to avoid rate limits
+        await sleep(2000);
+
+        const { data, error } = await supabase.auth.signUp({
+            email: u.email,
+            password: u.password,
+        });
+
+        if (error) {
+            if (error.message.includes('already registered')) {
+                console.log(`User ${u.email} already exists in Supabase Auth.`);
+            } else {
+                console.error(`Error creating user ${u.email}:`, error.message);
+            }
         } else {
-            console.error('Error creating user:', error.message);
-        }
-    } else {
-        console.log('User created successfully:', data.user?.id);
-        if (data.user && !data.user.email_confirmed_at && data.session === null) {
-            console.warn('WARNING: User created but email confirmation might be required. Check Supabase dashboard.');
+            console.log(`User ${u.email} created successfully:`, data.user?.id);
         }
     }
 }
 
-createAdminUser();
+createTestUsers();

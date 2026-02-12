@@ -4,14 +4,24 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Save, X, Lightbulb } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Save, X, Lightbulb, Sparkles, Zap } from 'lucide-react';
 import { saveInterventionPlan } from '@/app/actions/ews';
 import { toast } from 'sonner';
+
+interface InterventionSuggestion {
+    targetRisk: string;
+    leverageStrength: string;
+    strengthLabel: string;
+    strategy: string;
+    rationale: string;
+}
 
 interface InterventionPlanFormProps {
     studentId: string;
     signatureStrengths: any[];
     gradeAlerts: any[];
+    interventionSuggestions?: InterventionSuggestion[];
     onSuccess: () => void;
     onCancel: () => void;
 }
@@ -20,6 +30,7 @@ export function InterventionPlanForm({
     studentId,
     signatureStrengths,
     gradeAlerts,
+    interventionSuggestions = [],
     onSuccess,
     onCancel
 }: InterventionPlanFormProps) {
@@ -27,11 +38,14 @@ export function InterventionPlanForm({
     const [strategicActions, setStrategicActions] = useState('');
     const [expectedOutcome, setExpectedOutcome] = useState('');
 
-    // Sugestão automática baseada em forças e riscos
+    const appendSuggestion = (suggestion: InterventionSuggestion) => {
+        const text = `[${suggestion.strengthLabel}] ${suggestion.strategy}`;
+        setStrategicActions(prev => prev ? `${prev}\n\n${text}` : text);
+    };
+
     const generateSuggestion = () => {
         const topStrength = signatureStrengths[0]?.label || 'suas forças';
         const majorRisk = gradeAlerts[0]?.itemLabel || 'as dificuldades detectadas';
-
         const suggestion = `Aproveitar a força de ${topStrength} do aluno para que ele possa liderar pequenas tarefas em grupo, ajudando a mitigar o comportamento de ${majorRisk}. Estabelecer feedback diário focado no uso desta força.`;
         setStrategicActions(suggestion);
     };
@@ -46,7 +60,7 @@ export function InterventionPlanForm({
             leverageStrengths: signatureStrengths.slice(0, 2).map(s => s.label),
             strategicActions,
             expectedOutcome,
-            reviewDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias
+            reviewDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         });
 
         setLoading(false);
@@ -69,11 +83,38 @@ export function InterventionPlanForm({
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* Clickable Strength Badges */}
+                {interventionSuggestions.length > 0 && (
+                    <div className="bg-white p-3 rounded-lg border border-emerald-100 shadow-sm space-y-2">
+                        <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                            <Zap size={12} />
+                            Sugestões Baseadas em Forças (clique para adicionar)
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5">
+                            {interventionSuggestions.map((s, i) => (
+                                <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="cursor-pointer hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-all text-[11px] py-1 px-2.5"
+                                    onClick={() => appendSuggestion(s)}
+                                >
+                                    <Sparkles size={10} className="mr-1 text-emerald-500" />
+                                    {s.strengthLabel}: {s.targetRisk}
+                                </Badge>
+                            ))}
+                        </div>
+                        <p className="text-[10px] text-slate-400 italic">
+                            Cada badge insere uma estratégia no campo de ações abaixo.
+                        </p>
+                    </div>
+                )}
+
+                {/* Fallback: manual suggestion generation */}
                 <div className="bg-white p-3 rounded-lg border border-indigo-100 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                             <Lightbulb size={12} />
-                            Sugestão Baseada em Forças
+                            Sugestão Automática
                         </h4>
                         <Button
                             variant="outline"
@@ -85,7 +126,7 @@ export function InterventionPlanForm({
                         </Button>
                     </div>
                     <p className="text-[11px] text-slate-500 italic leading-relaxed">
-                        Clique em "Gerar Sugestão" para criar um esboço baseado na força "{signatureStrengths[0]?.label}" do aluno.
+                        Gera um esboço baseado na força &quot;{signatureStrengths[0]?.label || '...'}&quot; do aluno.
                     </p>
                 </div>
 

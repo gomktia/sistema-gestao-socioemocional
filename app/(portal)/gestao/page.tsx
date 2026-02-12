@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { ImpactSummary } from '@/components/management/ImpactSummary';
 import { Button } from '@/components/ui/button';
-import { Download, Filter, Database } from 'lucide-react';
+import { Download, Database } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {
@@ -19,23 +19,18 @@ export default async function GestaoPage() {
         redirect('/');
     }
 
-    const supabase = await createClient();
+    const totalStudents = await prisma.student.count({
+        where: { tenantId: user.tenantId },
+    });
 
-    // 1. Total de alunos
-    const { count: totalStudents } = await supabase
-        .from('students')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenantId', user.tenantId);
-
-    // 2. Dados de evolução por janela (Agregação Simples)
-    // Nota: Em um sistema real, faríamos um cache ou view agregada. 
-    // Aqui vamos buscar as janelas para compor o sumário.
-    const { data: assessments } = await supabase
-        .from('assessments')
-        .select('screeningWindow, overallTier')
-        .eq('tenantId', user.tenantId)
-        .eq('type', 'SRSS_IE')
-        .eq('academicYear', new Date().getFullYear());
+    const assessments = await prisma.assessment.findMany({
+        where: {
+            tenantId: user.tenantId,
+            type: 'SRSS_IE',
+            academicYear: new Date().getFullYear(),
+        },
+        select: { screeningWindow: true, overallTier: true },
+    });
 
     const windows = ['DIAGNOSTIC', 'MONITORING', 'FINAL'];
     const windowLabels: Record<string, string> = {
@@ -45,7 +40,7 @@ export default async function GestaoPage() {
     };
 
     const comparisonData = windows.map(w => {
-        const windowAss = assessments?.filter(a => a.screeningWindow === w) || [];
+        const windowAss = assessments.filter(a => a.screeningWindow === w);
         return {
             window: windowLabels[w],
             tier1: windowAss.filter(a => a.overallTier === 'TIER_1').length,
@@ -82,7 +77,7 @@ export default async function GestaoPage() {
             </div>
 
             <ImpactSummary
-                totalStudents={totalStudents || 0}
+                totalStudents={totalStudents}
                 comparisonData={comparisonData}
             />
         </div>

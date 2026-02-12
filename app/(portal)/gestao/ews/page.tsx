@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { EWSQuickLaunch } from '@/components/management/EWSQuickLaunch';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Info } from 'lucide-react';
@@ -19,15 +19,11 @@ export default async function EWSPage() {
         redirect('/');
     }
 
-    const supabase = await createClient();
-
-    // Buscar lista de alunos
-    const { data: students } = await supabase
-        .from('students')
-        .select('id, name, grade')
-        .eq('tenantId', user.tenantId)
-        .eq('isActive', true)
-        .order('name');
+    const students = await prisma.student.findMany({
+        where: { tenantId: user.tenantId, isActive: true },
+        select: { id: true, name: true, grade: true },
+        orderBy: { name: 'asc' },
+    });
 
     return (
         <div className="space-y-6">
@@ -52,7 +48,7 @@ export default async function EWSPage() {
                 </div>
             </div>
 
-            <EWSQuickLaunch students={students || []} />
+            <EWSQuickLaunch students={students} />
         </div>
     );
 }

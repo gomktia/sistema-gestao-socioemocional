@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
-import { UserRole } from '@/src/core/types';
+import { prisma } from '@/lib/prisma';
 
 export enum NotificationType {
     CRITICAL_RISK = 'CRITICAL_RISK',
@@ -19,26 +18,25 @@ interface CreateNotificationParams {
 }
 
 export async function createNotification(params: CreateNotificationParams) {
-    const supabase = await createClient();
+    try {
+        await prisma.notification.create({
+            data: {
+                tenantId: params.tenantId,
+                userId: params.userId || null,
+                studentId: params.studentId || null,
+                type: params.type,
+                title: params.title,
+                message: params.message,
+                link: params.link || null,
+                isRead: false,
+            },
+        });
 
-    const { error } = await supabase.from('notifications').insert({
-        tenantId: params.tenantId,
-        userId: params.userId || null,
-        studentId: params.studentId || null,
-        type: params.type,
-        title: params.title,
-        message: params.message,
-        link: params.link || null,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-    });
-
-    if (error) {
-        console.error('Error creating notification:', error.message);
-        return { success: false, error: error.message };
+        return { success: true };
+    } catch (e: any) {
+        console.error('Error creating notification:', e.message);
+        return { success: false, error: e.message };
     }
-
-    return { success: true };
 }
 
 /**

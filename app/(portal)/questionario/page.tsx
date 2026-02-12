@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { QuestionnaireWizard } from '@/components/questionnaire/QuestionnaireWizard';
 import { VIARawAnswers } from '@/src/core/types';
 
@@ -12,25 +12,20 @@ export const metadata = {
 export default async function QuestionarioPage() {
     const user = await getCurrentUser();
 
-    // Apenas alunos podem responder o questionário VIA
     if (!user || user.role !== UserRole.STUDENT) {
         redirect('/');
     }
 
-    const supabase = await createClient();
+    const assessment = await prisma.assessment.findFirst({
+        where: {
+            tenantId: user.tenantId,
+            studentId: user.studentId!,
+            type: 'VIA_STRENGTHS',
+        },
+        select: { rawAnswers: true, processedScores: true },
+        orderBy: { appliedAt: 'desc' },
+    });
 
-    // Carregar respostas existentes, se houver
-    const { data: assessment } = await supabase
-        .from('assessments')
-        .select('rawAnswers, processedScores')
-        .eq('studentId', user.studentId)
-        .eq('type', 'VIA_STRENGTHS')
-        .order('appliedAt', { ascending: false })
-        .limit(1)
-        .single();
-
-    // Se já estiver completado, podemos redirecionar para os resultados ou permitir editar.
-    // O plano sugere que se já houver resultados, mostramos os resultados.
     if (assessment?.processedScores) {
         redirect('/minhas-forcas');
     }

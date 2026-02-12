@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole, GradeLevel as CoreGradeLevel } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { calculateStudentProfile } from '@/src/core/logic/scoring';
 import { StudentProfileView } from '@/components/psychologist/StudentProfileView';
 import { Button } from '@/components/ui/button';
@@ -16,46 +16,39 @@ export default async function AlunoDetalhePage({ params }: { params: { id: strin
         redirect('/');
     }
 
-    const supabase = await createClient();
-
-    // Obter dados do aluno
-    const { data: student } = await supabase
-        .from('students')
-        .select('id, name, grade, tenantId')
-        .eq('id', params.id)
-        .single();
+    const student = await prisma.student.findUnique({
+        where: { id: params.id },
+        select: { id: true, name: true, grade: true, tenantId: true },
+    });
 
     if (!student || student.tenantId !== user.tenantId) {
         notFound();
     }
 
     // Obter todas as avaliações (para dados longitudinais)
-    const { data: allAssessments } = await supabase
-        .from('assessments')
-        .select('type, rawAnswers, processedScores, screeningWindow, academicYear, appliedAt')
-        .eq('studentId', student.id)
-        .order('appliedAt', { ascending: true });
+    const allAssessments = await prisma.assessment.findMany({
+        where: { tenantId: user.tenantId, studentId: student.id },
+        select: { type: true, rawAnswers: true, processedScores: true, screeningWindow: true, academicYear: true, appliedAt: true },
+        orderBy: { appliedAt: 'asc' },
+    });
 
-    const viaAnswers = allAssessments?.find(a => a.type === 'VIA_STRENGTHS')?.rawAnswers;
-    const srssAnswers = allAssessments?.find(a => a.type === 'SRSS_IE')?.rawAnswers;
+    const viaAnswers = allAssessments.find(a => a.type === 'VIA_STRENGTHS')?.rawAnswers;
+    const srssAnswers = allAssessments.find(a => a.type === 'SRSS_IE')?.rawAnswers;
 
-    // Dados para o Gráfico de Evolução (Fidelidade ao PDF: Março, Junho, Outubro)
-    const evolutionData = allAssessments?.[0]?.type === 'SRSS_IE' ? allAssessments
+    // Dados para o Gráfico de Evolução
+    const evolutionData = allAssessments
         .filter(a => a.type === 'SRSS_IE')
         .map(a => ({
             window: a.screeningWindow === 'DIAGNOSTIC' ? 'Março' : a.screeningWindow === 'MONITORING' ? 'Junho' : 'Outubro',
             externalizing: (a.processedScores as any)?.externalizing?.score || 0,
             internalizing: (a.processedScores as any)?.internalizing?.score || 0,
-        })) : [];
+        }));
 
     // Obter Indicadores EWS
-    const { data: ewsData } = await supabase
-        .from('school_indicators')
-        .select('*')
-        .eq('studentId', student.id)
-        .order('quarter', { ascending: false })
-        .limit(1)
-        .single();
+    const ewsData = await prisma.schoolIndicator.findFirst({
+        where: { tenantId: user.tenantId, studentId: student.id },
+        orderBy: { quarter: 'desc' },
+    });
 
     let ewsAlert = null;
     if (ewsData) {
@@ -63,14 +56,13 @@ export default async function AlunoDetalhePage({ params }: { params: { id: strin
         ewsAlert = calculateEWSAlert(
             ewsData.attendanceRate,
             ewsData.academicAverage,
-            ewsData.previousAverage,
+            ewsData.previousAverage ?? undefined,
             ewsData.disciplinaryLogs
         );
     }
 
     let profile = null;
     if (viaAnswers && srssAnswers) {
-        // Mapear GradeLevel do DB para o enum do core logic
         const gradeMap: Record<string, CoreGradeLevel> = {
             'ANO_1_EM': CoreGradeLevel.PRIMEIRO_ANO,
             'ANO_2_EM': CoreGradeLevel.SEGUNDO_ANO,
@@ -85,11 +77,11 @@ export default async function AlunoDetalhePage({ params }: { params: { id: strin
     }
 
     // Obter Planos de Intervenção (PEI)
-    const { data: interventionPlans } = await supabase
-        .from('intervention_plans')
-        .select('*, author(name)')
-        .eq('studentId', student.id)
-        .order('createdAt', { ascending: false });
+    const interventionPlans = await prisma.interventionPlan.findMany({
+        where: { tenantId: user.tenantId, studentId: student.id },
+        include: { author: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' },
+    });
 
     return (
         <div className="space-y-6">
@@ -132,7 +124,7 @@ export default async function AlunoDetalhePage({ params }: { params: { id: strin
                     profile={profile}
                     evolutionData={evolutionData}
                     ewsAlert={ewsAlert}
-                    interventionPlans={interventionPlans || []}
+                    interventionPlans={interventionPlans}
                 />
             )}
         </div>

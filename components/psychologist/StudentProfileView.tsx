@@ -134,9 +134,9 @@ export function StudentProfileView({
                         studentId={profile.studentId || ''}
                         signatureStrengths={signatureStrengths}
                         gradeAlerts={gradeAlerts}
+                        interventionSuggestions={interventionSuggestions}
                         onSuccess={() => {
                             setShowPlanForm(false);
-                            // Revalidação ocorre via action
                         }}
                         onCancel={() => setShowPlanForm(false)}
                     />

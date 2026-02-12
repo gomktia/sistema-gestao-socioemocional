@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { requireSuperAdmin } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,25 +18,14 @@ export const metadata = {
 };
 
 export default async function SchoolsPage() {
-    const user = await getCurrentUser();
-    // Hardcoded for demo stability
-    const adminEmail = 'geisonhoehr@gmail.com';
+    await requireSuperAdmin();
 
-    if (!user || user.email !== adminEmail) {
-        redirect('/');
-    }
-
-    const supabase = await createClient();
-
-    // 1. Buscar todas as escolas (Tenants)
-    const { data: tenants } = await supabase
-        .from('tenants')
-        .select(`
-      *,
-      _count_users: users(count),
-      _count_students: students(count)
-    `)
-        .order('createdAt', { ascending: false });
+    const tenants = await prisma.tenant.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+            _count: { select: { users: true, students: true } },
+        },
+    });
 
     return (
         <div className="min-h-screen bg-slate-50 p-8">
@@ -79,7 +68,7 @@ export default async function SchoolsPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
-                                    {tenants?.map((tenant) => (
+                                    {tenants.map((tenant) => (
                                         <tr key={tenant.id} className="hover:bg-slate-50/50 transition-colors group">
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
@@ -93,10 +82,10 @@ export default async function SchoolsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-center px-1 font-black text-slate-600 text-sm">
-                                                {tenant.count_users || 0}
+                                                {tenant._count.users}
                                             </td>
                                             <td className="px-6 py-5 text-center px-1 font-black text-slate-600 text-sm">
-                                                {tenant.count_students || 0}
+                                                {tenant._count.students}
                                             </td>
                                             <td className="px-6 py-5">
                                                 <Badge className={cn(

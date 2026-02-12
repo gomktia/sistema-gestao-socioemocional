@@ -146,7 +146,7 @@ export function Sidebar({ items, userName, userEmail, userRole }: SidebarProps) 
             </div>
 
             {/* Logout Button */}
-            <form action="/auth/signout" method="POST" className="mt-2">
+            <form action="/signout" method="POST" className="mt-2">
                 <button
                     type="submit"
                     className={cn(

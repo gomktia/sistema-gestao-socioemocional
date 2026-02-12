@@ -1,15 +1,33 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/src/core/types';
-import { getInterventionGroups } from '@/app/actions/interventions';
+import { getInterventionGroups, getStudentsForSelection } from '@/app/actions/interventions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Users2, Plus, Calendar, ArrowRight } from 'lucide-react';
+import { Users2, Calendar } from 'lucide-react';
 import { TierBadge } from '@/components/domain/TierBadge';
-import Link from 'next/link';
+import {
+    CreateGroupButton,
+    EditGroupButton,
+    DeleteGroupButton,
+} from '@/components/interventions/InterventionGroupActions';
+import { getLabels } from '@/src/lib/utils/labels';
 
 export const metadata = {
     title: 'Grupos de Intervenção | Camada 2',
+};
+
+const TYPE_LABELS: Record<string, string> = {
+    SOCIAL_SKILLS_GROUP: 'Habilidades Sociais',
+    EMOTION_REGULATION: 'Regulação Emocional',
+    CAREER_GUIDANCE: 'Orientação Vocacional',
+    PEER_MENTORING: 'Mentoria entre Pares',
+    STUDY_SKILLS: 'Habilidades de Estudo',
+    CHECK_IN_CHECK_OUT: 'Check-in / Check-out',
+    FAMILY_MEETING: 'Reunião Familiar',
+    INDIVIDUAL_PLAN: 'Plano Individual',
+    PSYCHOLOGIST_REFERRAL: 'Encaminhamento Psicólogo',
+    EXTERNAL_REFERRAL: 'Encaminhamento Externo',
+    CRISIS_PROTOCOL: 'Protocolo de Crise',
 };
 
 export default async function IntervencoesPage() {
@@ -20,20 +38,24 @@ export default async function IntervencoesPage() {
         redirect('/');
     }
 
-    const groups = await getInterventionGroups();
+    const labels = getLabels(user.organizationType);
+
+    const [groups, students] = await Promise.all([
+        getInterventionGroups(),
+        getStudentsForSelection(),
+    ]);
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Intervenções Camada 2</h1>
-                    <p className="text-slate-500 mt-1">Gestão de grupos focais para alunos de risco moderado.</p>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+                        Grupos de {labels.subjects}
+                    </h1>
+                    <p className="text-slate-500 mt-1">Gestão de grupos focais para {labels.subjects.toLowerCase()} de risco moderado.</p>
                 </div>
 
-                <Button className="bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200">
-                    <Plus className="mr-2" size={18} />
-                    Novo Grupo
-                </Button>
+                <CreateGroupButton students={students} labels={labels} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -42,42 +64,46 @@ export default async function IntervencoesPage() {
                         <CardHeader className="bg-slate-50/50 pb-4">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                    {group.type}
+                                    {TYPE_LABELS[group.type] || group.type}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase">
+                                <div className="flex items-center gap-1">
+                                    <EditGroupButton group={group} students={students} labels={labels} />
+                                    <DeleteGroupButton group={group} />
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-black text-slate-800">{group.name}</CardTitle>
+                                <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase shrink-0">
                                     <Calendar size={12} />
                                     {new Date(group.startDate).toLocaleDateString('pt-BR')}
                                 </span>
                             </div>
-                            <CardTitle className="text-lg font-black text-slate-800">{group.name}</CardTitle>
+                            {group.description && (
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-2">{group.description}</p>
+                            )}
                         </CardHeader>
                         <CardContent className="p-5">
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-                                    <span>Alunos no Grupo</span>
+                                    <span>{labels.subjects} no Grupo</span>
                                     <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-black">
                                         {group.students?.length || 0}
                                     </span>
                                 </div>
 
                                 <div className="space-y-2">
-                                    {(group.students || []).slice(0, 3).map((student: any) => (
+                                    {(group.students || []).slice(0, 4).map((student: any) => (
                                         <div key={student.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-[11px] font-bold text-slate-700">
                                             <span className="truncate max-w-[150px]">{student.name}</span>
                                             <TierBadge tier={student.overallTier} />
                                         </div>
                                     ))}
-                                    {(group.students?.length || 0) > 3 && (
+                                    {(group.students?.length || 0) > 4 && (
                                         <p className="text-[10px] text-slate-400 text-center font-bold uppercase tracking-widest pt-1">
-                                            + {group.students.length - 3} outros alunos
+                                            + {group.students.length - 4} outros {labels.subjects.toLowerCase()}
                                         </p>
                                     )}
                                 </div>
-
-                                <Button variant="ghost" className="w-full text-xs font-black text-indigo-600 uppercase hover:bg-indigo-50 group-hover:gap-3 transition-all">
-                                    Gerenciar Grupo
-                                    <ArrowRight size={14} />
-                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -88,7 +114,7 @@ export default async function IntervencoesPage() {
                         <Users2 className="text-slate-200 mb-4" size={64} />
                         <h3 className="text-slate-400 font-black text-xl uppercase tracking-tighter">Nenhum grupo ativo</h3>
                         <p className="text-slate-400 text-sm max-w-xs mt-2">
-                            Comece criando uma oficina de regulação emocional ou grupo de foco para alunos em Tier 2.
+                            Comece criando uma oficina ou grupo de foco para {labels.subjects.toLowerCase()}.
                         </p>
                     </div>
                 )}

@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateStudentProfile, calculateStrengthScores, calculateRiskScores } from '@/src/core/logic/scoring';
 import { GradeLevel, VIARawAnswers, SRSSRawAnswers, UserRole } from '@/src/core/types';
@@ -16,8 +16,6 @@ export async function saveVIAAnswers(answers: VIARawAnswers) {
         return { error: 'Não autorizado ou perfil de aluno não encontrado.' };
     }
 
-    const supabase = await createClient();
-
     // Verificar quantidade de respostas
     const answeredCount = Object.keys(answers).length;
     const isComplete = answeredCount >= 71;
@@ -26,7 +24,6 @@ export async function saveVIAAnswers(answers: VIARawAnswers) {
     let signatureStrengths = null;
 
     if (isComplete) {
-        // Calcular scores usando o motor de lógica core
         const strengthScores = calculateStrengthScores(answers);
         const sorted = [...strengthScores].sort((a, b) => b.normalizedScore - a.normalizedScore);
 
@@ -38,22 +35,43 @@ export async function saveVIAAnswers(answers: VIARawAnswers) {
         };
     }
 
-    // UPSERT na tabela de assessments
-    const { error } = await supabase.from('assessments').upsert({
-        tenantId: user.tenantId,
-        studentId: user.studentId,
-        type: 'VIA_STRENGTHS',
-        screeningWindow: 'DIAGNOSTIC',
-        academicYear: new Date().getFullYear(),
-        rawAnswers: answers,
-        processedScores: processedScores,
-        appliedAt: new Date().toISOString(),
-    }, {
-        onConflict: 'tenantId,studentId,type,screeningWindow,academicYear',
-    });
+    try {
+        // Tentar encontrar assessment existente para upsert
+        const existing = await prisma.assessment.findFirst({
+            where: {
+                tenantId: user.tenantId,
+                studentId: user.studentId,
+                type: 'VIA_STRENGTHS',
+                screeningWindow: 'DIAGNOSTIC',
+                academicYear: new Date().getFullYear(),
+            },
+        });
 
-    if (error) {
-        console.error('Error saving VIA:', error.message);
+        if (existing) {
+            await prisma.assessment.update({
+                where: { id: existing.id },
+                data: {
+                    rawAnswers: answers as any,
+                    processedScores: processedScores as any,
+                    appliedAt: new Date(),
+                },
+            });
+        } else {
+            await prisma.assessment.create({
+                data: {
+                    tenantId: user.tenantId,
+                    studentId: user.studentId,
+                    type: 'VIA_STRENGTHS',
+                    screeningWindow: 'DIAGNOSTIC',
+                    academicYear: new Date().getFullYear(),
+                    rawAnswers: answers as any,
+                    processedScores: processedScores as any,
+                    appliedAt: new Date(),
+                },
+            });
+        }
+    } catch (e: any) {
+        console.error('Error saving VIA:', e.message);
         return { error: 'Erro ao salvar o questionário.' };
     }
 
@@ -74,15 +92,14 @@ export async function getMyStrengths() {
     const user = await getCurrentUser();
     if (!user || !user.studentId) return null;
 
-    const supabase = await createClient();
-    const { data } = await supabase
-        .from('assessments')
-        .select('processedScores, appliedAt')
-        .eq('studentId', user.studentId)
-        .eq('type', 'VIA_STRENGTHS')
-        .order('appliedAt', { ascending: false })
-        .limit(1)
-        .single();
+    const data = await prisma.assessment.findFirst({
+        where: {
+            studentId: user.studentId,
+            type: 'VIA_STRENGTHS',
+        },
+        select: { processedScores: true, appliedAt: true },
+        orderBy: { appliedAt: 'desc' },
+    });
 
     return data;
 }
@@ -98,14 +115,11 @@ export async function saveSRSSScreening(studentId: string, answers: SRSSRawAnswe
         return { error: 'Não autorizado.' };
     }
 
-    const supabase = await createClient();
-
     // Obter dados do aluno para garantir que pertence ao mesmo tenant
-    const { data: student } = await supabase
-        .from('students')
-        .select('tenantId, grade')
-        .eq('id', studentId)
-        .single();
+    const student = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { tenantId: true, grade: true, name: true },
+    });
 
     if (!student || student.tenantId !== user.tenantId) {
         return { error: 'Aluno não encontrado ou acesso negado.' };
@@ -115,29 +129,57 @@ export async function saveSRSSScreening(studentId: string, answers: SRSSRawAnswe
     const risk = calculateRiskScores(answers);
     const overallTier = risk.externalizing.tier; // Simplificação
 
-    const { error } = await supabase.from('assessments').upsert({
-        tenantId: user.tenantId,
-        studentId,
-        type: 'SRSS_IE',
-        screeningWindow: 'DIAGNOSTIC',
-        academicYear: new Date().getFullYear(),
-        screeningTeacherId: user.id,
-        rawAnswers: answers,
-        processedScores: risk,
-        overallTier: overallTier,
-        externalizingScore: risk.externalizing.score,
-        internalizingScore: risk.internalizing.score,
-        appliedAt: new Date().toISOString(),
-    });
+    try {
+        const existing = await prisma.assessment.findFirst({
+            where: {
+                tenantId: user.tenantId,
+                studentId,
+                type: 'SRSS_IE',
+                screeningWindow: 'DIAGNOSTIC',
+                academicYear: new Date().getFullYear(),
+            },
+        });
 
-    if (error) return { error: 'Erro ao salvar triagem.' };
+        if (existing) {
+            await prisma.assessment.update({
+                where: { id: existing.id },
+                data: {
+                    screeningTeacherId: user.id,
+                    rawAnswers: answers as any,
+                    processedScores: risk as any,
+                    overallTier: overallTier,
+                    externalizingScore: risk.externalizing.score,
+                    internalizingScore: risk.internalizing.score,
+                    appliedAt: new Date(),
+                },
+            });
+        } else {
+            await prisma.assessment.create({
+                data: {
+                    tenantId: user.tenantId,
+                    studentId,
+                    type: 'SRSS_IE',
+                    screeningWindow: 'DIAGNOSTIC',
+                    academicYear: new Date().getFullYear(),
+                    screeningTeacherId: user.id,
+                    rawAnswers: answers as any,
+                    processedScores: risk as any,
+                    overallTier: overallTier,
+                    externalizingScore: risk.externalizing.score,
+                    internalizingScore: risk.internalizing.score,
+                    appliedAt: new Date(),
+                },
+            });
+        }
+    } catch (e: any) {
+        console.error('Error saving SRSS:', e.message);
+        return { error: 'Erro ao salvar triagem.' };
+    }
 
     // Gatilho de Notificação Crítica se for Tier 3
     if (overallTier === 'TIER_3') {
         const { notifyCriticalRisk } = await import('@/lib/notifications');
-        // Usar o nome do aluno que já buscamos acima
-        const { data: studentFull } = await supabase.from('students').select('name').eq('id', studentId).single();
-        await notifyCriticalRisk(user.tenantId, studentId, studentFull?.name || 'Aluno');
+        await notifyCriticalRisk(user.tenantId, studentId, student.name);
     }
 
     revalidatePath('/turma');

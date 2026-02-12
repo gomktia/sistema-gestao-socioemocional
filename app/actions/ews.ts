@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/src/core/types';
 import { revalidatePath } from 'next/cache';
@@ -23,31 +23,35 @@ export async function saveInterventionPlan(params: {
         return { error: 'Não autorizado.' };
     }
 
-    const supabase = await createClient();
-
-    const { data: plan, error } = await supabase
-        .from('intervention_plans')
-        .insert({
-            tenantId: user.tenantId,
-            studentId: params.studentId,
-            authorId: user.id,
-            targetRisks: params.targetRisks,
-            leverageStrengths: params.leverageStrengths,
-            strategicActions: params.strategicActions,
-            expectedOutcome: params.expectedOutcome,
-            reviewDate: params.reviewDate,
-            status: 'ACTIVE',
-        })
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error saving PEI:', error.message);
-        return { error: 'Erro ao salvar o plano.' };
+    // Validar que o aluno pertence ao tenant do usuário
+    const student = await prisma.student.findFirst({
+        where: { id: params.studentId, tenantId: user.tenantId },
+    });
+    if (!student) {
+        return { error: 'Aluno não encontrado ou acesso negado.' };
     }
 
-    revalidatePath(`/alunos/${params.studentId}`);
-    return { success: true, plan };
+    try {
+        const plan = await prisma.interventionPlan.create({
+            data: {
+                tenantId: user.tenantId,
+                studentId: params.studentId,
+                authorId: user.id,
+                targetRisks: params.targetRisks,
+                leverageStrengths: params.leverageStrengths,
+                strategicActions: params.strategicActions,
+                expectedOutcome: params.expectedOutcome,
+                reviewDate: params.reviewDate ? new Date(params.reviewDate) : undefined,
+                status: 'ACTIVE',
+            },
+        });
+
+        revalidatePath(`/alunos/${params.studentId}`);
+        return { success: true, plan };
+    } catch (e: any) {
+        console.error('Error saving PEI:', e.message);
+        return { error: 'Erro ao salvar o plano.' };
+    }
 }
 
 /**
@@ -65,25 +69,42 @@ export async function saveSchoolIndicators(params: {
     const user = await getCurrentUser();
     if (!user || user.role === UserRole.STUDENT) return { error: 'Não autorizado.' };
 
-    const supabase = await createClient();
+    // Validar que o aluno pertence ao tenant do usuário
+    const studentCheck = await prisma.student.findFirst({
+        where: { id: params.studentId, tenantId: user.tenantId },
+    });
+    if (!studentCheck) {
+        return { error: 'Aluno não encontrado ou acesso negado.' };
+    }
 
-    const { data, error } = await supabase
-        .from('school_indicators')
-        .upsert({
-            tenantId: user.tenantId,
-            studentId: params.studentId,
-            academicYear: params.academicYear,
-            quarter: params.quarter,
-            attendanceRate: params.attendanceRate,
-            academicAverage: params.academicAverage,
-            disciplinaryLogs: params.disciplinaryLogs,
-            previousAverage: params.previousAverage,
-        }, {
-            onConflict: 'studentId,academicYear,quarter'
+    try {
+        await prisma.schoolIndicator.upsert({
+            where: {
+                studentId_academicYear_quarter: {
+                    studentId: params.studentId,
+                    academicYear: params.academicYear,
+                    quarter: params.quarter,
+                },
+            },
+            update: {
+                attendanceRate: params.attendanceRate,
+                academicAverage: params.academicAverage,
+                disciplinaryLogs: params.disciplinaryLogs,
+                previousAverage: params.previousAverage,
+            },
+            create: {
+                tenantId: user.tenantId,
+                studentId: params.studentId,
+                academicYear: params.academicYear,
+                quarter: params.quarter,
+                attendanceRate: params.attendanceRate,
+                academicAverage: params.academicAverage,
+                disciplinaryLogs: params.disciplinaryLogs,
+                previousAverage: params.previousAverage,
+            },
         });
-
-    if (error) {
-        console.error('Error saving EWS:', error.message);
+    } catch (e: any) {
+        console.error('Error saving EWS:', e.message);
         return { error: 'Erro ao salvar indicadores.' };
     }
 
@@ -99,8 +120,10 @@ export async function saveSchoolIndicators(params: {
     if (alert.alertLevel !== 'NONE') {
         const { createNotification, NotificationType } = await import('@/lib/notifications');
 
-        // Buscar nome do aluno
-        const { data: student } = await supabase.from('students').select('name').eq('id', params.studentId).single();
+        const student = await prisma.student.findUnique({
+            where: { id: params.studentId },
+            select: { name: true },
+        });
 
         await createNotification({
             tenantId: user.tenantId,
@@ -113,6 +136,6 @@ export async function saveSchoolIndicators(params: {
     }
 
     revalidatePath(`/alunos/${params.studentId}`);
-    revalidatePath('/gestao/ews'); // Futura página de lançamento rápido
+    revalidatePath('/gestao/ews');
     return { success: true };
 }

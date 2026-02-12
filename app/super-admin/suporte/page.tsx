@@ -1,16 +1,9 @@
-import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth';
+import { requireSuperAdmin } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { LifeBuoy, HeartHandshake } from 'lucide-react';
 
 export default async function SupportPage() {
-    const user = await getCurrentUser();
-    // Hardcoded for demo stability
-    const adminEmail = 'geisonhoehr@gmail.com';
-
-    if (!user || user.email !== adminEmail) {
-        redirect('/');
-    }
+    await requireSuperAdmin();
 
     return (
         <div className="min-h-screen bg-slate-50 p-8">

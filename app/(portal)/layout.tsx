@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, canAccessRoute } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { getNavForRole } from '@/components/sidebar-nav';
-import { headers } from 'next/headers';
 
 export default async function PortalLayout({
     children,
@@ -16,11 +16,17 @@ export default async function PortalLayout({
         redirect('/login');
     }
 
-    // Obter o pathname atual para verificar permissão RBAC
-    // Nota: Next.js não fornece o pathname diretamente em Server Components,
-    // mas podemos passar através do middleware se necessário ou usar headers.
-    // Por simplicidade aqui, confiamos no middleware para a proteção básica
-    // e no canAccessRoute para lógica de renderização se necessário.
+    // Verificação de assinatura (subscription) via Prisma
+    if (user.tenantId) {
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: user.tenantId },
+            select: { subscriptionStatus: true },
+        });
+
+        if (tenant && tenant.subscriptionStatus !== 'active') {
+            redirect('/subscription-expired');
+        }
+    }
 
     const navItems = getNavForRole(user.role);
 

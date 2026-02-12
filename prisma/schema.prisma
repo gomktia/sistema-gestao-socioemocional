@@ -18,6 +18,7 @@ model Tenant {
   phone              String?
   email              String?
   logoUrl            String?
+  organizationType   OrganizationType    @default(EDUCATIONAL)
   isActive           Boolean             @default(true)
   subscriptionStatus String              @default("active") // active, past_due, canceled
   createdAt          DateTime            @default(now())
@@ -361,4 +362,11 @@ enum NotificationType {
   NEW_ASSESSMENT
   INTERVENTION_DUE
   SYSTEM_ALERT
+}
+
+enum OrganizationType {
+  EDUCATIONAL
+  MILITARY
+  CORPORATE
+  SPORTS
 }

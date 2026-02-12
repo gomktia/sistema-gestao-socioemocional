@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
-import { createClient } from '@/lib/supabase/server';
 import { ClassDashboard } from '@/components/teacher/ClassDashboard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -19,41 +19,36 @@ export default async function TurmaPage() {
         redirect('/');
     }
 
-    const supabase = await createClient();
+    const students = await prisma.student.findMany({
+        where: { tenantId: user.tenantId, isActive: true },
+        select: { id: true, name: true, grade: true },
+        orderBy: { name: 'asc' },
+    });
 
-    // Obter alunos
-    const { data: students } = await supabase
-        .from('students')
-        .select('id, name, grade')
-        .eq('tenantId', user.tenantId)
-        .eq('isActive', true)
-        .order('name');
+    const assessments = await prisma.assessment.findMany({
+        where: {
+            tenantId: user.tenantId,
+            type: 'SRSS_IE',
+            academicYear: new Date().getFullYear(),
+        },
+        select: { studentId: true, overallTier: true, rawAnswers: true },
+    });
 
-    // Obter avaliações SRSS-IE
-    const { data: assessments } = await supabase
-        .from('assessments')
-        .select('studentId, overallTier, rawAnswers')
-        .eq('tenantId', user.tenantId)
-        .eq('type', 'SRSS_IE')
-        .eq('academicYear', new Date().getFullYear());
-
-    const assessmentMap = new Map((assessments || []).map(a => [a.studentId, a]));
+    const assessmentMap = new Map(assessments.map(a => [a.studentId, a]));
 
     const { generateGradeAlerts } = await import('@/src/core/logic/scoring');
     const { GradeLevel: CoreGradeLevel } = await import('@/src/core/types');
 
-    // Mapeamento de GradeLevel do DB para o enum do core logic
     const gradeMap: Record<string, any> = {
         'ANO_1_EM': CoreGradeLevel.PRIMEIRO_ANO,
         'ANO_2_EM': CoreGradeLevel.SEGUNDO_ANO,
         'ANO_3_EM': CoreGradeLevel.TERCEIRO_ANO,
     };
 
-    const studentsWithRisk = (students || []).map(s => {
+    const studentsWithRisk = students.map(s => {
         const a = assessmentMap.get(s.id);
         const coreGrade = gradeMap[s.grade] || CoreGradeLevel.PRIMEIRO_ANO;
 
-        // Usar lógica core para alertas específicos por série
         const alertsList = a?.rawAnswers
             ? generateGradeAlerts(a.rawAnswers as any, coreGrade)
             : [];

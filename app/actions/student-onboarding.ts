@@ -15,7 +15,13 @@ const supabaseAdmin = createClient(
     }
 )
 
-export async function validateInviteToken(token: string) {
+
+type ValidationResult =
+    | { valid: false; error?: string }
+    | { valid: true; type: 'INVITATION'; data: any }
+    | { valid: true; type: 'STUDENT_CODE'; data: { id: string; name: string; tenant: { id: string; name: string } } };
+
+export async function validateInviteToken(token: string): Promise<ValidationResult> {
     if (!token) return { valid: false }
 
     // 1. Try to find in StudentInvitation (Not used in simplified flow but good to have)

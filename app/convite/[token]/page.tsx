@@ -37,7 +37,9 @@ export default async function OnboardingPage({ params }: OnboardingProps) {
         return notFound()
     }
 
-    const { name: studentName, tenant: { name: tenantName } } = validation.data
+    const studentData = validation.data
+    const studentName = studentData.name
+    const tenantName = studentData.tenant.name
 
     async function handleRegister(formData: FormData) {
         'use server'

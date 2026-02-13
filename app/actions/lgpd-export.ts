@@ -10,7 +10,7 @@ export async function exportStudentData(studentId: string) {
 
     // Verificar permissão
     // Estudante só pode exportar seus próprios dados
-    if (user.role === UserRole.STUDENT && user.studentId !== studentId) {
+    if (user.role === Role.STUDENT && user.studentId !== studentId) {
         throw new Error("Acesso negado. Você só pode exportar seus próprios dados.");
     }
     // ADMIN, MANAGER, PSYCHOLOGIST, COUNSELOR podem exportar de alunos do mesmo tenant

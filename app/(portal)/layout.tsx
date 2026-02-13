@@ -51,7 +51,7 @@ export default async function PortalLayout({
                     organizationType={user.organizationType}
                 />
 
-                <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+                <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full">
                     {children}
                 </div>
             </main>

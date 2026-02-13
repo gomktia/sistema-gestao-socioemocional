@@ -4,10 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { UserRole, GradeLevel as CoreGradeLevel } from '@/src/core/types';
 import { calculateStudentProfile } from '@/src/core/logic/scoring';
 import { StudentProfileView } from '@/components/psychologist/StudentProfileView';
+import { StudentManagementPanel } from '@/components/psychologist/StudentManagementPanel';
+import { StudentCharts } from '@/components/psychologist/StudentCharts';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ChevronLeft, UserCircle } from 'lucide-react';
 import { getLabels } from '@/src/lib/utils/labels';
+import { DataPortabilityCard } from '@/components/legal/DataPortabilityCard';
 
 export default async function AlunoDetalhePage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -22,7 +25,19 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
 
     const student = await prisma.student.findUnique({
         where: { id: params.id },
-        select: { id: true, name: true, grade: true, tenantId: true },
+        select: {
+            id: true,
+            name: true,
+            grade: true,
+            tenantId: true,
+            isFormEnabled: true,
+            userAccount: {
+                select: { id: true, email: true, supabaseUid: true }
+            },
+            tenant: {
+                select: { name: true, logoUrl: true }
+            }
+        },
     });
 
     if (!student || student.tenantId !== user.tenantId) {
@@ -114,8 +129,29 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
                 </div>
             </div>
 
+            {/* Painel de Gestão (Visível apenas para Psicólogo/Admin) */}
+            <StudentManagementPanel
+                studentId={student.id}
+                studentName={student.name}
+                initialIsFormEnabled={student.isFormEnabled}
+                hasAccount={!!student.userAccount}
+            />
+
+            {/* Gráficos de Monitoramento */}
+            <StudentCharts
+                evolutionData={evolutionData.map(d => ({
+                    window: d.window,
+                    externalizing: d.externalizing as number,
+                    internalizing: d.internalizing as number
+                }))}
+                // TODO: Extrair scores reais do profile ou assessment. 
+                // Por simplicidade, assumindo que profile tem signatureStrengths com scores simplificados ou precisamos mapear do processedScores
+                // Vou passar null por enquanto se não tiver profile, ou tentar extrair do assessment VIA
+                viaScores={allAssessments.find(a => a.type === 'VIA_STRENGTHS')?.processedScores as any}
+            />
+
             {!profile ? (
-                <div className="bg-slate-100 rounded-2xl p-12 text-center border-2 border-dashed border-slate-200">
+                <div className="bg-slate-50 rounded-2xl p-12 text-center border-2 border-dashed border-slate-200">
                     <h3 className="text-slate-500 font-bold mb-2">Perfil Incompleto</h3>
                     <p className="text-slate-400 text-sm max-w-sm mx-auto">
                         Este {labels.subject.toLowerCase()} precisa completar o questionário VIA e o {labels.actor.toLowerCase()} deve realizar a triagem SRSS-IE para gerar o perfil integrado e intervenções.
@@ -140,6 +176,8 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
                     labels={labels}
                 />
             )}
+
+            <DataPortabilityCard studentId={student.id} studentName={student.name} />
         </div>
     );
 }

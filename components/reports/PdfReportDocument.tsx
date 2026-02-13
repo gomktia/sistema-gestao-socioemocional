@@ -112,11 +112,19 @@ interface PdfProps {
 export const PdfReportDocument = ({ student, opinion, labels, authorName, authorRole }: PdfProps) => (
     <Document>
         <Page size="A4" style={styles.page}>
-            {/* Header */}
+            {/* Header com Logo */}
             <View style={styles.header}>
-                <View>
-                    <Text style={styles.title}>Laudo Socioemocional</Text>
-                    <Text style={styles.subtitle}>Relatório Confidencial de Acompanhamento</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {student.tenant?.logoUrl && (
+                        <Image
+                            src={student.tenant.logoUrl}
+                            style={{ width: 40, height: 40, marginRight: 15, borderRadius: 4 }}
+                        />
+                    )}
+                    <View>
+                        <Text style={styles.title}>{student.tenant?.name || 'Relatório Institucional'}</Text>
+                        <Text style={styles.subtitle}>Prontuário de Acompanhamento Socioemocional</Text>
+                    </View>
                 </View>
                 <View>
                     <Text style={{ fontSize: 9, color: '#94a3b8' }}>
@@ -125,29 +133,39 @@ export const PdfReportDocument = ({ student, opinion, labels, authorName, author
                 </View>
             </View>
 
-            {/* Student Info */}
-            <View style={styles.infoGrid}>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Nome do {labels.subject}</Text>
-                    <Text style={styles.value}>{student.name}</Text>
+            {/* Student Info - Layout Compacto */}
+            <View style={{ ...styles.infoGrid, borderRadius: 8, padding: 20 }}>
+                <View style={{ flexDirection: 'row', width: '100%', marginBottom: 15 }}>
+                    <View style={{ width: '60%' }}>
+                        <Text style={styles.label}>Nome do {labels.subject}</Text>
+                        <Text style={{ ...styles.value, fontSize: 13 }}>{student.name}</Text>
+                    </View>
+                    <View style={{ width: '40%' }}>
+                        <Text style={styles.label}>Matrícula / ID</Text>
+                        <Text style={styles.value}>{student.enrollmentId || 'N/A'}</Text>
+                    </View>
                 </View>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Turma</Text>
-                    <Text style={styles.value}>{student.classroom?.name || 'N/A'}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Matrícula</Text>
-                    <Text style={styles.value}>{student.enrollmentId || 'N/A'}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>{labels.organization}</Text>
-                    <Text style={styles.value}>{student.tenant?.name || 'Sistema Gestão'}</Text>
+                <View style={{ flexDirection: 'row', width: '100%' }}>
+                    <View style={{ width: '60%' }}>
+                        <Text style={styles.label}>Unidade / Turma</Text>
+                        <Text style={styles.value}>{student.classroom?.name || 'Não enturmado'}</Text>
+                    </View>
+                    <View style={{ width: '40%' }}>
+                        <Text style={styles.label}>Data de Nascimento</Text>
+                        <Text style={styles.value}>{student.birthDate ? new Date(student.birthDate).toLocaleDateString('pt-BR') : 'N/A'}</Text>
+                    </View>
                 </View>
             </View>
 
-            {/* Main Content */}
+            <View style={{ marginBottom: 10 }}>
+                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#1e293b', textTransform: 'uppercase', letterSpacing: 1 }}>
+                    Parecer Técnico
+                </Text>
+            </View>
+
+            {/* Main Content - Sem bordas, layout limpo */}
             <View style={styles.section}>
-                <Text style={styles.bodyText}>
+                <Text style={{ ...styles.bodyText, lineHeight: 1.6, color: '#334155' }}>
                     {opinion}
                 </Text>
             </View>
@@ -159,16 +177,15 @@ export const PdfReportDocument = ({ student, opinion, labels, authorName, author
                     <Text style={{ fontSize: 8, color: '#64748b' }}>{authorRole}</Text>
                 </View>
                 <View style={styles.signatureLine}>
-                    <Text style={styles.signatureText}>Responsável / Coordenação</Text>
-                    <Text style={{ fontSize: 8, color: '#64748b' }}>Visto</Text>
+                    <Text style={styles.signatureText}>Coordenação / Direção</Text>
+                    <Text style={{ fontSize: 8, color: '#64748b' }}>Visto Institucional</Text>
                 </View>
             </View>
 
-            {/* Footer */}
+            {/* Footer Minimalista */}
             <View style={styles.footer}>
-                <Text style={{ fontSize: 8, color: '#cbd5e1' }}>
-                    Documento gerado eletronicamente em {new Date().toLocaleString('pt-BR')}.
-                    A validade deste documento está condicionada à verificação junto à instituição de ensino/militar.
+                <Text style={{ fontSize: 7, color: '#cbd5e1' }}>
+                    Documento gerado eletronicamente em {new Date().toLocaleString('pt-BR')} • {student.tenant?.name || 'SocioEmotional System'}
                 </Text>
             </View>
         </Page>

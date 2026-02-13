@@ -10,11 +10,36 @@ import { revalidatePath } from 'next/cache';
  * Salva as respostas do questionário VIA.
  * Se todas as 71 perguntas estiverem respondidas, calcula os scores e as forças de assinatura.
  */
-export async function saveVIAAnswers(answers: VIARawAnswers) {
+export async function saveVIAAnswers(answers: VIARawAnswers, targetStudentId?: string) {
     const user = await getCurrentUser();
-    if (!user || user.role !== UserRole.STUDENT || !user.studentId) {
-        return { error: 'Não autorizado ou perfil de aluno não encontrado.' };
+    if (!user) return { error: 'Não autorizado.' };
+
+    let studentIdToSave = user.studentId;
+
+    if (targetStudentId) {
+        // Modo Entrevista (Psicólogo/Staff)
+        if (!['PSYCHOLOGIST', 'MANAGER', 'ADMIN', 'COUNSELOR'].includes(user.role)) {
+            return { error: 'Permissão negada para realizar entrevista.' };
+        }
+
+        // Verificar se aluno pertence ao tenant
+        const targetStudent = await prisma.student.findUnique({
+            where: { id: targetStudentId, tenantId: user.tenantId },
+            select: { id: true }
+        });
+
+        if (!targetStudent) {
+            return { error: 'Aluno não encontrado neste tenant.' };
+        }
+        studentIdToSave = targetStudentId;
+    } else {
+        // Auto-aplicação (Aluno)
+        if (user.role !== UserRole.STUDENT || !user.studentId) {
+            return { error: 'Perfil de aluno não encontrado.' };
+        }
     }
+
+    if (!studentIdToSave) return { error: 'ID do aluno não definido.' };
 
     // Verificar quantidade de respostas
     const answeredCount = Object.keys(answers).length;
@@ -24,6 +49,7 @@ export async function saveVIAAnswers(answers: VIARawAnswers) {
     let signatureStrengths = null;
 
     if (isComplete) {
+        // ... (rest of logic same)
         const strengthScores = calculateStrengthScores(answers);
         const sorted = [...strengthScores].sort((a, b) => b.normalizedScore - a.normalizedScore);
 
@@ -40,7 +66,7 @@ export async function saveVIAAnswers(answers: VIARawAnswers) {
         const existing = await prisma.assessment.findFirst({
             where: {
                 tenantId: user.tenantId,
-                studentId: user.studentId,
+                studentId: studentIdToSave,
                 type: 'VIA_STRENGTHS',
                 screeningWindow: 'DIAGNOSTIC',
                 academicYear: new Date().getFullYear(),
@@ -60,10 +86,12 @@ export async function saveVIAAnswers(answers: VIARawAnswers) {
             await prisma.assessment.create({
                 data: {
                     tenantId: user.tenantId,
-                    studentId: user.studentId,
+                    studentId: studentIdToSave,
                     type: 'VIA_STRENGTHS',
                     screeningWindow: 'DIAGNOSTIC',
                     academicYear: new Date().getFullYear(),
+                    // Se foi entrevista, quem aplicou?
+                    screeningTeacherId: targetStudentId ? user.id : undefined,
                     rawAnswers: answers as any,
                     processedScores: processedScores as any,
                     appliedAt: new Date(),

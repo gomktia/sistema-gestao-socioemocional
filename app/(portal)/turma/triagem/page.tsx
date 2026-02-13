@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { UserRole } from '@/src/core/types';
 import { SRSSGrid } from '@/components/teacher/SRSSGrid';
 import { getLabels } from '@/src/lib/utils/labels';
+import { ClipboardCheck, Lightbulb } from 'lucide-react';
 
 export const metadata = {
     title: 'Lançar Triagem | Inteligência Socioemocional',
@@ -40,24 +41,36 @@ export default async function TriagemPage() {
         };
     });
 
+    const labels = getLabels(user.organizationType);
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-10 animate-in fade-in duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Lançar Triagem</h1>
-                    <p className="text-slate-500 mt-1">Identificação preventiva de riscos comportamentais e socioemocionais.</p>
+                <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-indigo-200">
+                        <ClipboardCheck size={24} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Lançar Triagem</h1>
+                        <p className="text-slate-500 mt-0.5 text-sm">Identificação preventiva de riscos comportamentais e socioemocionais.</p>
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3 text-amber-800">
-                <div className="flex-shrink-0">💡</div>
-                <p className="text-xs leading-relaxed">
-                    <strong>Dica:</strong> O preenchimento é feito item a item.
-                    O cálculo do Risco (Tier) é atualizado automaticamente assim que o instrumento é concluído para cada pessoa.
-                </p>
+            <div className="bg-gradient-to-br from-amber-50 to-amber-50/30 rounded-3xl p-6 flex items-start gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <div className="h-10 w-10 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                    <Lightbulb size={20} className="text-amber-600" strokeWidth={1.5} />
+                </div>
+                <div>
+                    <h4 className="font-extrabold text-amber-900 text-sm tracking-tight">Como funciona</h4>
+                    <p className="text-amber-700 text-xs mt-1 leading-relaxed">
+                        Clique nas células para atribuir valores (0-3) a cada item do instrumento SRSS.
+                        O cálculo do Risco (Tier) é atualizado automaticamente assim que o instrumento é concluído para cada {labels?.subject?.toLowerCase() ?? 'aluno'}.
+                    </p>
+                </div>
             </div>
 
-            <SRSSGrid students={students} existingData={existingData} labels={getLabels(user.organizationType)} />
+            <SRSSGrid students={students} existingData={existingData} labels={labels} />
         </div>
     );
 }

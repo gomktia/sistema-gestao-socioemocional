@@ -64,16 +64,16 @@ export default async function TurmaPage() {
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-10 animate-in fade-in duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mapa de Risco</h1>
-                    <p className="text-slate-500 mt-1">Visão geral do clima socioemocional da turma.</p>
+                    <p className="text-slate-500 mt-1.5 text-sm">Visão geral do clima socioemocional da turma.</p>
                 </div>
 
                 <Link href="/turma/triagem">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200">
-                        <ClipboardList className="mr-2" size={18} />
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 rounded-2xl active:scale-95 transition-all">
+                        <ClipboardList className="mr-2" size={18} strokeWidth={1.5} />
                         Atualizar Triagem
                     </Button>
                 </Link>

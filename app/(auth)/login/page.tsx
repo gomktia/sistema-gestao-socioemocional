@@ -72,7 +72,7 @@ export default function LoginPage() {
                                     htmlFor="email"
                                     className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"
                                 >
-                                    Email Institucional
+                                    CPF ou Email Institucional
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
@@ -81,10 +81,10 @@ export default function LoginPage() {
                                     <input
                                         id="email"
                                         name="email"
-                                        type="email"
+                                        type="text"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="seu@email.com"
+                                        placeholder="000.000.000-00 ou email@escola.com"
                                         required
                                         className="w-full h-14 pl-12 pr-4 rounded-2xl border border-slate-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-900"
                                     />

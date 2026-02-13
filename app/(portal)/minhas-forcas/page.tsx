@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { DownloadReportButton } from '@/components/reports/DownloadReportButton';
 import { STRENGTH_DESCRIPTIONS } from '@/src/core/content/strength-descriptions';
+import { DataPortabilityCard } from '@/components/legal/DataPortabilityCard';
 
 export const metadata = {
     title: 'Minhas Forças de Caráter',
@@ -138,6 +139,8 @@ export default async function MinhasForcasPage() {
                     </div>
                 )}
             </section>
+
+            <DataPortabilityCard studentId={user.studentId} studentName={user.name} />
         </div>
     );
 }

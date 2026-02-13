@@ -33,6 +33,8 @@ model Tenant {
   schoolIndicators   SchoolIndicator[]
   students           Student[]
   users              User[]
+  invitations        StudentInvitation[]
+  formQuestions      FormQuestion[]
 
   @@map("tenants")
 }
@@ -41,6 +43,7 @@ model User {
   id                String            @id @default(cuid())
   tenantId          String
   email             String
+  cpf               String?           @unique // Added for new Identity Structure
   name              String
   role              Role
   supabaseUid       String?           @unique
@@ -51,6 +54,7 @@ model User {
   teacherScreenings Assessment[]      @relation("ScreeningTeacher")
   interventionLogs  InterventionLog[] @relation("InterventionAuthor")
   interventionPlans InterventionPlan[] @relation("PlanAuthor")
+  auditLogs         AuditLog[]        // Relation to AuditLog
   notifications     Notification[]    @relation("UserNotifications")
   studentProfile    Student?          @relation("StudentUser", fields: [studentId], references: [id])
   tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -65,7 +69,8 @@ model Student {
   id                 String              @id @default(cuid())
   tenantId           String
   name               String
-  birthDate          DateTime?
+  cpf                String?             @unique // Added for new Identity Structure
+  birthDate          DateTime?           // Kept as birthDate (dateOfBirth)
   grade              GradeLevel
   classroomId        String?
   enrollmentId       String?
@@ -73,6 +78,10 @@ model Student {
   guardianPhone      String?
   guardianEmail      String?
   isActive           Boolean             @default(true)
+  isFormEnabled      Boolean             @default(false)
+  accessCode         String?             @unique // Restored for invitation flow
+  formAccessExpiresAt DateTime?
+  consentAcceptedAt  DateTime?           // Added for LGPD
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   assessments        Assessment[]
@@ -90,6 +99,56 @@ model Student {
   @@index([tenantId, grade])
   @@index([classroomId])
   @@map("students")
+}
+
+model StudentInvitation {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  tenantId  String
+  email     String?
+  status    String    @default("PENDING")
+  usedByStudentId String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([tenantId])
+  @@map("student_invitations")
+}
+
+model FormQuestion {
+  id        String         @id @default(cuid())
+  tenantId  String?        // Made optional for system-wide questions or initial migration
+  number    Int            
+  order     Int            @default(0) 
+  text      String
+  category  String?
+  weight    Int            @default(1) 
+  type      AssessmentType
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  tenant    Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, type, number]) // Ensure uniqueness per tenant (or null)
+  @@map("form_questions")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  targetId  String?
+  details   Json?
+  ip        String?  // Added as requested
+  timestamp DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
 }
 
 model Classroom {

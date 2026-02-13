@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const plusJakarta = Plus_Jakarta_Sans({
+    subsets: ['latin'],
+    variable: '--font-plus-jakarta',
+});
 
 export const metadata: Metadata = {
     title: 'Gestao Socioemocional',
@@ -18,7 +21,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="pt-BR">
-            <body className={inter.className} suppressHydrationWarning>
+            <body className={`${plusJakarta.variable} font-sans`} suppressHydrationWarning>
                 {children}
                 <Toaster position="top-right" richColors />
             </body>

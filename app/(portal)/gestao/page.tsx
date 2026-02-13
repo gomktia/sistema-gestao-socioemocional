@@ -53,27 +53,27 @@ export default async function GestaoPage() {
     }).filter(wd => wd.tier1 + wd.tier2 + wd.tier3 > 0);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-10 animate-in fade-in duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                         Gestão de Impacto
-                        <span className="text-xs font-black bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase tracking-widest">
+                        <span className="text-[10px] font-extrabold bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
                             Live
                         </span>
                     </h1>
-                    <p className="text-slate-500 mt-1">Sumário executivo de eficácia e monitoramento sociocomportamental.</p>
+                    <p className="text-slate-500 mt-1.5 text-sm">Sumário executivo de eficácia e monitoramento sociocomportamental.</p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                     <Link href="/gestao/ews">
-                        <Button variant="outline" className="border-slate-200">
-                            <Database className="mr-2" size={16} />
+                        <Button variant="outline" className="border-slate-200 rounded-2xl active:scale-95 transition-all hover:border-indigo-200 hover:text-indigo-700">
+                            <Database className="mr-2" size={16} strokeWidth={1.5} />
                             Indicadores EWS
                         </Button>
                     </Link>
-                    <Button className="bg-slate-900 hover:bg-slate-800">
-                        <Download className="mr-2" size={16} />
+                    <Button className="bg-slate-900 hover:bg-slate-800 rounded-2xl active:scale-95 transition-all shadow-lg">
+                        <Download className="mr-2" size={16} strokeWidth={1.5} />
                         Exportar Relatório
                     </Button>
                 </div>

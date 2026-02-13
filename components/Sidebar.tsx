@@ -22,7 +22,8 @@ import {
     ChevronLeft,
     ChevronRight,
     UserCircle,
-    GraduationCap
+    GraduationCap,
+    ShieldAlert
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -41,7 +42,8 @@ const ICON_MAP: Record<string, any> = {
     School,
     CreditCard,
     LifeBuoy,
-    GraduationCap
+    GraduationCap,
+    ShieldAlert
 };
 
 interface SidebarProps {
@@ -57,7 +59,6 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    // Fechar menu mobile ao navegar
     useEffect(() => {
         setIsMobileOpen(false);
     }, [pathname]);
@@ -75,20 +76,19 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
     const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
     const SidebarHeader = () => (
-        <div className={cn("p-6 flex items-center justify-between transition-all duration-300 relative z-20", isCollapsed && "p-4 justify-center")}>
-            <div className={cn("flex items-center gap-3 transition-opacity duration-300 overflow-hidden", isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100")}>
-                <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
+        <div className={cn("p-6 pb-2 flex items-center justify-between transition-all duration-300 relative z-20", isCollapsed && "p-4 justify-center")}>
+            <div className={cn("flex items-center gap-3.5 transition-opacity duration-300 overflow-hidden", isCollapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100")}>
+                <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
                     <span className="text-white font-black text-lg">GS</span>
                 </div>
                 <div>
                     <h2 className="text-lg font-black text-white whitespace-nowrap tracking-tight">EduInteligência</h2>
-                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">SaaS Edition</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">SaaS Edition</p>
                 </div>
             </div>
 
-            {/* Logo Collapsed */}
             {isCollapsed && (
-                <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg cursor-pointer" onClick={toggleCollapse}>
+                <div className="h-10 w-10 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg cursor-pointer" onClick={toggleCollapse}>
                     <span className="text-white font-black text-lg">GS</span>
                 </div>
             )}
@@ -96,7 +96,7 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
     );
 
     const NavList = () => (
-        <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+        <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
             {items.map((item) => {
                 const Icon = ICON_MAP[item.iconName] || Home;
                 const isActive = pathname === item.href || (item.href !== '/' && item.href !== '/super-admin' && pathname.startsWith(item.href));
@@ -109,29 +109,29 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
                         className={cn(
                             "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group relative",
                             (isActive || isExactActive)
-                                ? "bg-white/10 text-white shadow-inner backdrop-blur-md"
-                                : "text-slate-400 hover:bg-white/5 hover:text-white hover:backdrop-blur-sm",
+                                ? "bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl ring-1 ring-white/[0.05]"
+                                : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200",
                             isCollapsed && "justify-center px-2 py-3"
                         )}
                         title={isCollapsed ? item.label : undefined}
                     >
                         <Icon
-                            size={22}
+                            size={20}
+                            strokeWidth={1.5}
                             className={cn(
-                                "shrink-0 transition-transform duration-300 group-hover:scale-110",
+                                "shrink-0 transition-all duration-300 group-hover:scale-110",
                                 (isActive || isExactActive) ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]" : "group-hover:text-indigo-300"
                             )}
                         />
 
                         {!isCollapsed && (
-                            <span className="font-bold text-sm truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                            <span className="font-semibold text-[13px] truncate animate-in fade-in slide-in-from-left-2 duration-300">
                                 {item.label}
                             </span>
                         )}
 
-                        {/* Active Indicator Glow (Left) */}
                         {(isActive || isExactActive) && !isCollapsed && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-400 rounded-r-full shadow-[0_0_15px_#818cf8]" />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 bg-indigo-400 rounded-r-full shadow-[0_0_12px_#818cf8]" />
                         )}
                     </Link>
                 );
@@ -140,8 +140,8 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
     );
 
     const UserProfile = () => (
-        <div className="p-4 bg-black/20 backdrop-blur-md border-t border-white/5 relative z-20">
-            <div className={cn("flex items-center gap-3 w-full p-2 rounded-2xl transition-all hover:bg-white/5 cursor-pointer group", isCollapsed && "justify-center p-0 hover:bg-transparent")}>
+        <div className="p-4 bg-black/20 backdrop-blur-xl border-t border-white/5 relative z-20">
+            <div className={cn("flex items-center gap-3 w-full p-2.5 rounded-2xl transition-all hover:bg-white/5 cursor-pointer group", isCollapsed && "justify-center p-0 hover:bg-transparent")}>
                 <div className="relative">
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg border-2 border-[#0f172a] group-hover:border-indigo-500/50 transition-colors">
                         {userName.charAt(0).toUpperCase()}
@@ -152,35 +152,33 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
                 {!isCollapsed && (
                     <div className="flex-1 min-w-0 overflow-hidden text-left animate-in fade-in slide-in-from-left-2 duration-300">
                         <p className="text-sm font-bold text-white truncate leading-tight group-hover:text-indigo-200 transition-colors">{userName}</p>
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-0.5">{roleLabels[userRole] || userRole}</p>
+                        <p className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mt-0.5">{roleLabels[userRole] || userRole}</p>
                     </div>
                 )}
             </div>
 
-            {/* Logout Button */}
             <form action="/signout" method="POST" className="mt-2">
                 <button
                     type="submit"
                     className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all active:scale-95",
+                        "w-full flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all active:scale-95",
                         isCollapsed && "justify-center"
                     )}
                     title="Sair"
                 >
-                    <LogOut size={16} />
+                    <LogOut size={16} strokeWidth={1.5} />
                     {!isCollapsed && <span>Sair do Sistema</span>}
                 </button>
             </form>
         </div>
     );
 
-    // Desktop Collapse Button
     const CollapseToggle = () => (
         <button
             onClick={toggleCollapse}
             className="hidden lg:flex absolute -right-4 top-10 z-50 h-8 w-8 items-center justify-center rounded-full bg-[#1e293b] border-2 border-[#0f172a] text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.5)] active:scale-90"
         >
-            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {isCollapsed ? <ChevronRight size={16} strokeWidth={1.5} /> : <ChevronLeft size={16} strokeWidth={1.5} />}
         </button>
     );
 
@@ -188,24 +186,25 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
         <>
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-[#0f172a]/95 backdrop-blur-xl border-b border-white/5 shadow-2xl w-full">
-                <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
                         <span className="text-white font-black text-sm">GS</span>
                     </div>
+                    <span className="text-white font-extrabold text-sm tracking-tight">EduInteligência</span>
                 </div>
                 <button
                     onClick={() => setIsMobileOpen(!isMobileOpen)}
                     className="p-2 text-slate-300 hover:bg-white/10 rounded-xl active:scale-95 transition-all"
                 >
-                    {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+                    {isMobileOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
                 </button>
             </div>
 
             {/* Sidebar Container */}
             <div className={cn(
-                "fixed inset-y-0 left-0 z-40 bg-[#0f172a] transform transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col shadow-2xl h-full border-r border-white/5",
+                "fixed inset-y-0 left-0 z-40 bg-[#0f172a] transform transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col shadow-2xl h-full border-r border-white/[0.04]",
                 isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:static lg:inset-auto",
-                isCollapsed ? "w-24" : "w-80"
+                isCollapsed ? "w-[76px]" : "w-72"
             )}>
                 <CollapseToggle />
                 <SidebarHeader />
@@ -213,13 +212,13 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
                 <UserProfile />
 
                 {/* Background Decoration */}
-                <div className="absolute bottom-0 left-0 w-full h-96 bg-gradient-to-t from-indigo-900/20 to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-full h-80 bg-gradient-to-t from-indigo-950/30 to-transparent pointer-events-none" />
             </div>
 
             {/* Mobile Backdrop */}
             {isMobileOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-[#000000]/80 backdrop-blur-sm lg:hidden transition-opacity duration-500"
+                    className="fixed inset-0 z-30 bg-[#000000]/70 backdrop-blur-sm lg:hidden transition-opacity duration-500"
                     onClick={() => setIsMobileOpen(false)}
                 />
             )}

@@ -49,11 +49,11 @@ export function StudentProfileView({
                 (labels.organization === 'Escola' ? '3ª Série EM' : 'Nível 3');
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8">
             {/* EWS Alerta (Early Warning) */}
             {ewsAlert && ewsAlert.alertLevel !== 'NONE' && (
                 <div className={cn(
-                    "p-4 rounded-xl border flex items-center justify-between gap-4 animate-in slide-in-from-top-2",
+                    "p-4 rounded-xl border flex items-center justify-between gap-4",
                     ewsAlert.alertLevel === 'CRITICAL' ? "bg-rose-50 border-rose-200" : "bg-amber-50 border-amber-200"
                 )}>
                     <div className="flex items-center gap-4">

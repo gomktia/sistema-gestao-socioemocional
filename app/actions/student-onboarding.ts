@@ -58,9 +58,10 @@ export async function completeStudentRegistration(token: string, data: {
     let existingStudentName: string = ''
 
     if (validation.valid && validation.type === 'STUDENT_CODE') {
-        studentId = validation.data.id
-        tenantId = validation.data.tenant.id
-        existingStudentName = validation.data.name
+        const studentData = (validation as { type: 'STUDENT_CODE', data: { id: string, name: string, tenant: { id: string } } }).data
+        studentId = studentData.id
+        tenantId = studentData.tenant.id
+        existingStudentName = studentData.name
     } else {
         throw new Error("Fluxo de convite genérico não implementado.")
     }

@@ -19,69 +19,74 @@ export interface AppUser {
  * Usa Supabase Auth para verificar a sessão e Prisma para consultar o banco.
  */
 export async function getCurrentUser(): Promise<AppUser | null> {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    try {
+        const supabase = await createClient();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) return null;
 
-    const cookieStore = await cookies();
-    const activeTenantId = cookieStore.get('active_tenant_id')?.value;
+        const cookieStore = await cookies();
+        const activeTenantId = cookieStore.get('active_tenant_id')?.value;
 
-    // Tentar buscar por UID ou Email, priorizando o tenant ativo se o cookie existir
-    let dbUser: any;
+        // Tentar buscar por UID ou Email, priorizando o tenant ativo se o cookie existir
+        let dbUser: any;
 
-    if (activeTenantId) {
-        dbUser = await prisma.user.findFirst({
-            where: {
-                tenantId: activeTenantId,
-                OR: [
-                    { supabaseUid: user.id },
-                    { email: user.email || '' }
-                ]
-            },
-            include: {
-                tenant: {
-                    select: { organizationType: true }
+        if (activeTenantId) {
+            dbUser = await prisma.user.findFirst({
+                where: {
+                    tenantId: activeTenantId,
+                    OR: [
+                        { supabaseUid: user.id },
+                        { email: user.email || '' }
+                    ]
+                },
+                include: {
+                    tenant: {
+                        select: { organizationType: true }
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    // Se não encontrou pelo tenant ativo ou não tem cookie, busca o primeiro disponível
-    if (!dbUser) {
-        dbUser = await prisma.user.findFirst({
-            where: {
-                OR: [
-                    { supabaseUid: user.id },
-                    { email: user.email || '' }
-                ]
-            },
-            include: {
-                tenant: {
-                    select: { organizationType: true }
+        // Se não encontrou pelo tenant ativo ou não tem cookie, busca o primeiro disponível
+        if (!dbUser) {
+            dbUser = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        { supabaseUid: user.id },
+                        { email: user.email || '' }
+                    ]
+                },
+                include: {
+                    tenant: {
+                        select: { organizationType: true }
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        if (dbUser && !dbUser.supabaseUid && user.id) {
+            // Vincular o UID do Supabase se for o primeiro acesso
+            await prisma.user.update({
+                where: { id: dbUser.id },
+                data: { supabaseUid: user.id },
+            });
+        }
+
+        if (!dbUser) return null;
+
+        return {
+            id: dbUser.id,
+            email: dbUser.email,
+            name: dbUser.name,
+            role: dbUser.role as UserRole,
+            tenantId: dbUser.tenantId,
+            studentId: dbUser.studentId,
+            organizationType: dbUser.tenant?.organizationType ?? 'EDUCATIONAL',
+        };
+    } catch (error) {
+        console.error('Error in getCurrentUser:', error);
+        return null;
     }
-
-    if (dbUser && !dbUser.supabaseUid && user.id) {
-        // Vincular o UID do Supabase se for o primeiro acesso
-        await prisma.user.update({
-            where: { id: dbUser.id },
-            data: { supabaseUid: user.id },
-        });
-    }
-
-    if (!dbUser) return null;
-
-    return {
-        id: dbUser.id,
-        email: dbUser.email,
-        name: dbUser.name,
-        role: dbUser.role as UserRole,
-        tenantId: dbUser.tenantId,
-        studentId: dbUser.studentId,
-        organizationType: dbUser.tenant?.organizationType ?? 'EDUCATIONAL',
-    };
 }
 
 /**

@@ -116,7 +116,12 @@ export async function updateStudentCredentials(studentId: string, email?: string
             // Update local Prisma User if email changed
             if (email) {
                 await prisma.user.update({
-                    where: { supabaseUid: uid },
+                    where: {
+                        tenantId_supabaseUid: {
+                            tenantId: currentUser.tenantId,
+                            supabaseUid: uid
+                        }
+                    },
                     data: { email }
                 })
             }

@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ClipboardList } from 'lucide-react';
 import { getLabels } from '@/src/lib/utils/labels';
+import { cn } from '@/lib/utils';
 
 export const metadata = {
     title: 'Minha Turma | Dashboard',
 };
 
-export default async function TurmaPage() {
+export default async function TurmaPage(props: { searchParams: Promise<{ classroomId?: string }> }) {
+    const searchParams = await props.searchParams;
     const user = await getCurrentUser();
     const allowedRoles = [UserRole.TEACHER, UserRole.PSYCHOLOGIST, UserRole.COUNSELOR, UserRole.MANAGER, UserRole.ADMIN];
 
@@ -20,17 +22,30 @@ export default async function TurmaPage() {
         redirect('/');
     }
 
-    const students = await prisma.student.findMany({
-        where: { tenantId: user.tenantId, isActive: true },
-        select: { id: true, name: true, grade: true },
-        orderBy: { name: 'asc' },
-    });
+    const classroomId = searchParams.classroomId;
+
+    const [students, classrooms] = await Promise.all([
+        prisma.student.findMany({
+            where: {
+                tenantId: user.tenantId,
+                isActive: true,
+                ...(classroomId ? { classroomId } : {})
+            },
+            select: { id: true, name: true, grade: true },
+            orderBy: { name: 'asc' },
+        }),
+        prisma.classroom.findMany({
+            where: { tenantId: user.tenantId },
+            select: { id: true, name: true }
+        })
+    ]);
 
     const assessments = await prisma.assessment.findMany({
         where: {
             tenantId: user.tenantId,
             type: 'SRSS_IE',
             academicYear: new Date().getFullYear(),
+            ...(classroomId ? { student: { classroomId } } : {})
         },
         select: { studentId: true, overallTier: true, rawAnswers: true },
     });
@@ -68,7 +83,32 @@ export default async function TurmaPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mapa de Risco</h1>
-                    <p className="text-slate-500 mt-1.5 text-sm">Visão geral do clima socioemocional da turma.</p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                        <p className="text-slate-500 text-sm italic">O que você está vendo:</p>
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href="/turma"
+                                className={cn(
+                                    "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest transition-all",
+                                    !classroomId ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                )}
+                            >
+                                Visão Geral
+                            </Link>
+                            {classrooms.map(c => (
+                                <Link
+                                    key={c.id}
+                                    href={`/turma?classroomId=${c.id}`}
+                                    className={cn(
+                                        "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest transition-all",
+                                        classroomId === c.id ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                    )}
+                                >
+                                    {c.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 <Link href="/turma/triagem">

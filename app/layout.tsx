@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner';
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function RootLayout({
     children,
@@ -22,8 +23,10 @@ export default function RootLayout({
     return (
         <html lang="pt-BR">
             <body className={`${plusJakarta.variable} font-sans`} suppressHydrationWarning>
-                {children}
-                <Toaster position="top-right" richColors />
+                <TooltipProvider>
+                    {children}
+                    <Toaster position="top-right" richColors />
+                </TooltipProvider>
             </body>
         </html>
     );

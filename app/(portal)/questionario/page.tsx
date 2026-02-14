@@ -106,7 +106,11 @@ export default async function QuestionarioPage() {
                 </p>
             </div>
 
-            <QuestionnaireWizard initialAnswers={initialAnswers} />
+            <QuestionnaireWizard
+                initialAnswers={initialAnswers}
+                studentName={user.name}
+                studentId={user.studentId}
+            />
         </div>
     );
 }

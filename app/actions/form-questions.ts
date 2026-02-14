@@ -2,70 +2,53 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { AssessmentType } from "@prisma/client"
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { AssessmentType, EducationalLevel } from "@prisma/client"
+import { getCurrentUser } from "@/lib/auth"
 
-// Helper para verificar permissão
-async function checkPermission() {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll()
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    } catch {
-                        // The `setAll` method was called from a Server Component.
-                        // This can be ignored if you have middleware refreshing
-                        // user sessions.
-                    }
-                },
-            },
-        }
-    )
+// Helpers para verificar permissão
+async function checkWritePermission() {
+    const dbUser = await getCurrentUser();
+    if (!dbUser) throw new Error("Unauthorized")
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error("Unauthorized")
+    // Apenas ADMIN (SaaS SuperAdmin) pode alterar protocolos do sistema
+    if (dbUser.role !== 'ADMIN') {
+        throw new Error("Forbidden - Somente Administradores SaaS podem alterar protocolos.")
+    }
 
-    const dbUser = await prisma.user.findUnique({
-        where: { supabaseUid: user.id },
-    })
+    return dbUser
+}
 
-    // Permitir ADMIN e PSYCHOLOGIST
-    if (!dbUser || !['ADMIN', 'PSYCHOLOGIST'].includes(dbUser.role)) {
+async function checkReadPermission() {
+    const dbUser = await getCurrentUser();
+    if (!dbUser) throw new Error("Unauthorized")
+
+    // Todos exceto STUDENT podem visualizar os protocolos para consulta
+    if (dbUser.role === 'STUDENT') {
         throw new Error("Forbidden")
     }
 
     return dbUser
 }
 
-export async function getQuestions() {
-    const user = await checkPermission()
-    // Admin vê global + tenant questions? Ou só tenant?
-    // Se "isolamento total", ele vê apenas do tenant dele.
-    // Mas se tenantId for null (global), ele também deveria ver?
-    // Vamos assumir: Perguntas do Tenant + Perguntas Globais (tenantId is null)
-    // OU se o user for SUPER ADMIN (Sem tenant?), ele vê tudo?
-    // User sempre tem tenantId.
+export async function getQuestions(educationalLevel?: EducationalLevel) {
+    const user = await checkReadPermission()
+
+    const where: any = {
+        OR: [
+            { tenantId: user.tenantId },
+            { tenantId: null }
+        ]
+    }
+
+    if (educationalLevel) {
+        where.educationalLevel = educationalLevel
+    }
 
     return await prisma.formQuestion.findMany({
-        where: {
-            OR: [
-                { tenantId: user.tenantId },
-                { tenantId: null }
-            ]
-        },
+        where,
         orderBy: [
             { type: 'asc' },
-            { order: 'asc' }, // Changed from number to order
+            { order: 'asc' },
             { number: 'asc' }
         ]
     })
@@ -76,11 +59,12 @@ export async function createQuestion(data: {
     text: string
     category?: string
     type: AssessmentType
+    educationalLevel?: EducationalLevel
     isActive?: boolean
     order?: number
     weight?: number
 }) {
-    const user = await checkPermission()
+    const user = await checkWritePermission()
 
     try {
         const question = await prisma.formQuestion.create({
@@ -90,6 +74,7 @@ export async function createQuestion(data: {
                 text: data.text,
                 category: data.category,
                 type: data.type,
+                educationalLevel: data.educationalLevel || 'HIGH_SCHOOL',
                 isActive: data.isActive ?? true,
                 order: data.order ?? 0,
                 weight: data.weight ?? 1
@@ -108,15 +93,14 @@ export async function updateQuestion(id: string, data: {
     text?: string
     category?: string
     type?: AssessmentType
+    educationalLevel?: EducationalLevel
     isActive?: boolean
     order?: number
     weight?: number
 }) {
-    const user = await checkPermission()
+    const user = await checkWritePermission()
 
     try {
-        // Ensure user owns question or is super admin?
-        // Basic update
         const question = await prisma.formQuestion.update({
             where: { id },
             data
@@ -130,7 +114,7 @@ export async function updateQuestion(id: string, data: {
 }
 
 export async function deleteQuestion(id: string) {
-    await checkPermission()
+    await checkWritePermission()
 
     try {
         await prisma.formQuestion.delete({

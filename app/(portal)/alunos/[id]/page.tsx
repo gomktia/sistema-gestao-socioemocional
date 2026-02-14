@@ -81,7 +81,10 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
     }
 
     let profile = null;
-    if (viaAnswers && srssAnswers) {
+    // Ensure VIA assessment is complete (71 items) before calculating profile
+    const isViaComplete = viaAnswers && Object.keys(viaAnswers as object).length >= 71;
+
+    if (isViaComplete && srssAnswers) {
         const gradeMap: Record<string, CoreGradeLevel> = {
             'ANO_1_EM': CoreGradeLevel.PRIMEIRO_ANO,
             'ANO_2_EM': CoreGradeLevel.SEGUNDO_ANO,

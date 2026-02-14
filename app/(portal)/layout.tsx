@@ -21,9 +21,9 @@ export default async function PortalLayout({
 
     const tenant = user.tenantId
         ? await prisma.tenant.findUnique({
-              where: { id: user.tenantId },
-              select: { subscriptionStatus: true, onboardingCompleted: true, name: true },
-          })
+            where: { id: user.tenantId },
+            select: { subscriptionStatus: true, onboardingCompleted: true, name: true },
+        })
         : null;
 
     if (tenant && tenant.subscriptionStatus !== 'active') {
@@ -35,6 +35,10 @@ export default async function PortalLayout({
     const isManager = user.role === UserRole.MANAGER || user.role === UserRole.ADMIN;
     const showWizard = isManager && tenant ? !tenant.onboardingCompleted : false;
 
+    // Multi-tenancy: Buscar todos os vínculos
+    const { getMyTenants } = await import('@/app/actions/tenant-selector');
+    const tenants = await getMyTenants();
+
     return (
         <div className="flex flex-col h-screen overflow-hidden lg:flex-row bg-slate-50">
             <Sidebar
@@ -42,6 +46,8 @@ export default async function PortalLayout({
                 userName={user.name}
                 userRole={user.role}
                 organizationType={user.organizationType}
+                tenants={tenants}
+                activeTenantId={user.tenantId}
             />
 
             <main className="flex-1 flex flex-col min-h-0 pt-16 lg:pt-0 overflow-y-auto">

@@ -6,17 +6,22 @@ import { AssessmentType } from "@prisma/client"
 import { createClient } from "@supabase/supabase-js"
 import { getCurrentUser } from "@/lib/auth"
 
-// Cliente Supabase Admin para operações privilegiadas
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-    {
+// Helper to get Supabase Admin client only when needed
+function getSupabaseAdmin() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !key) {
+        throw new Error("Supabase credentials missing (Service Role Key)");
+    }
+
+    return createClient(url, key, {
         auth: {
             autoRefreshToken: false,
             persistSession: false
         }
-    }
-)
+    });
+}
 
 export async function toggleFormAccess(studentId: string, isEnabled: boolean, durationHours?: number) {
     const currentUser = await getCurrentUser()
@@ -105,7 +110,7 @@ export async function updateStudentCredentials(studentId: string, email?: string
         if (password) updates.password = password
 
         if (Object.keys(updates).length > 0) {
-            const { error } = await supabaseAdmin.auth.admin.updateUserById(uid, updates)
+            const { error } = await getSupabaseAdmin().auth.admin.updateUserById(uid, updates)
             if (error) throw error
 
             // Update local Prisma User if email changed

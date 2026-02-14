@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { UserRole } from '@core/types';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 export interface AppUser {
     id: string;
@@ -22,20 +23,45 @@ export async function getCurrentUser(): Promise<AppUser | null> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // Tentar buscar por UID ou Email
-    let dbUser: any = await prisma.user.findFirst({
-        where: {
-            OR: [
-                { supabaseUid: user.id },
-                { email: user.email || '' }
-            ]
-        },
-        include: {
-            tenant: {
-                select: { organizationType: true }
+    const cookieStore = await cookies();
+    const activeTenantId = cookieStore.get('active_tenant_id')?.value;
+
+    // Tentar buscar por UID ou Email, priorizando o tenant ativo se o cookie existir
+    let dbUser: any;
+
+    if (activeTenantId) {
+        dbUser = await prisma.user.findFirst({
+            where: {
+                tenantId: activeTenantId,
+                OR: [
+                    { supabaseUid: user.id },
+                    { email: user.email || '' }
+                ]
+            },
+            include: {
+                tenant: {
+                    select: { organizationType: true }
+                }
             }
-        }
-    });
+        });
+    }
+
+    // Se não encontrou pelo tenant ativo ou não tem cookie, busca o primeiro disponível
+    if (!dbUser) {
+        dbUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { supabaseUid: user.id },
+                    { email: user.email || '' }
+                ]
+            },
+            include: {
+                tenant: {
+                    select: { organizationType: true }
+                }
+            }
+        });
+    }
 
     if (dbUser && !dbUser.supabaseUid && user.id) {
         // Vincular o UID do Supabase se for o primeiro acesso

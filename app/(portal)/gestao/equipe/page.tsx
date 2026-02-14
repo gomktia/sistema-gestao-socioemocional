@@ -22,7 +22,13 @@ export default async function EquipePage() {
     const teamMembers = await prisma.user.findMany({
         where: {
             tenantId: currentUser.tenantId,
-            role: { in: ['MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR', 'TEACHER'] }
+            // SECURITY: SuperAdmins (ADMIN) are hidden from Tenant panels to prevent accidental deletion 
+            // and maintain clear hierarchy, unless the user viewing is also a SuperAdmin.
+            role: {
+                in: currentUser.role === 'ADMIN'
+                    ? ['MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR', 'TEACHER']
+                    : ['MANAGER', 'PSYCHOLOGIST', 'COUNSELOR', 'TEACHER']
+            }
         },
         orderBy: { createdAt: 'desc' },
     });

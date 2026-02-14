@@ -43,7 +43,7 @@ model User {
   id                String            @id @default(cuid())
   tenantId          String
   email             String
-  cpf               String?           @unique // Added for new Identity Structure
+  cpf               String?           // Changed from @unique to support multi-tenancy links
   name              String
   role              Role
   supabaseUid       String?           @unique
@@ -60,6 +60,7 @@ model User {
   tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, email])
+  @@unique([tenantId, cpf]) // Added for Multi-Tenancy
   @@index([tenantId])
   @@index([supabaseUid])
   @@map("users")
@@ -69,7 +70,7 @@ model Student {
   id                 String              @id @default(cuid())
   tenantId           String
   name               String
-  cpf                String?             @unique // Added for new Identity Structure
+  cpf                String?             // Changed from @unique to support multi-tenancy links
   birthDate          DateTime?           // Kept as birthDate (dateOfBirth)
   grade              GradeLevel
   classroomId        String?
@@ -95,6 +96,7 @@ model Student {
   interventionGroups InterventionGroup[] @relation("InterventionGroupToStudent")
 
   @@unique([tenantId, enrollmentId])
+  @@unique([tenantId, cpf]) // Added for Multi-Tenancy
   @@index([tenantId])
   @@index([tenantId, grade])
   @@index([classroomId])
@@ -118,21 +120,28 @@ model StudentInvitation {
 }
 
 model FormQuestion {
-  id        String         @id @default(cuid())
-  tenantId  String?        // Made optional for system-wide questions or initial migration
+  id        String           @id @default(cuid())
+  tenantId  String?          // Made optional for system-wide questions or initial migration
   number    Int            
-  order     Int            @default(0) 
+  order     Int              @default(0) 
   text      String
   category  String?
-  weight    Int            @default(1) 
+  weight    Int              @default(1) 
   type      AssessmentType
-  isActive  Boolean        @default(true)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  tenant    Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  educationalLevel EducationalLevel @default(HIGH_SCHOOL)
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  tenant    Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, type, number]) // Ensure uniqueness per tenant (or null)
   @@map("form_questions")
+}
+
+enum EducationalLevel {
+  KINDERGARTEN
+  ELEMENTARY
+  HIGH_SCHOOL
 }
 
 model AuditLog {

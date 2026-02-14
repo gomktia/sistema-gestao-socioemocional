@@ -22,7 +22,8 @@ export async function login(formData: FormData) {
     if (!identifier.includes('@')) {
         if (isValidCPF(identifier)) {
             const cpf = cleanCPF(identifier);
-            const user = await prisma.user.findUnique({
+            // Agora CPF não é único globalmente
+            const user = await prisma.user.findFirst({
                 where: { cpf },
                 select: { email: true }
             });
@@ -49,20 +50,15 @@ export async function login(formData: FormData) {
     // Vincular UID ao registro Prisma se ainda não vinculado
     const supabaseUid = data.user?.id;
     if (supabaseUid) {
-        const existingByUid = await prisma.user.findFirst({
-            where: { supabaseUid },
-            select: { id: true, role: true },
-        });
-
-        if (existingByUid) {
-            // Já vinculado — redirecionar
-            redirect(getHomeForRole(existingByUid.role));
-        }
-
-        // Tentar vincular por email
+        // Tentar obter o primeiro usuário para setar o tenant inicial
         const dbUser = await prisma.user.findFirst({
-            where: { email: emailToAuth },
-            select: { id: true, role: true, supabaseUid: true },
+            where: {
+                OR: [
+                    { supabaseUid },
+                    { email: emailToAuth }
+                ]
+            },
+            select: { id: true, role: true, supabaseUid: true, tenantId: true },
         });
 
         if (dbUser) {
@@ -73,6 +69,12 @@ export async function login(formData: FormData) {
                 });
                 console.log('[LOGIN] Linked UID', supabaseUid, 'to user', emailToAuth);
             }
+
+            // Setar o tenant ativo inicial
+            const { cookies } = await import('next/headers');
+            const cookieStore = await cookies();
+            cookieStore.set('active_tenant_id', dbUser.tenantId, { path: '/' });
+
             redirect(getHomeForRole(dbUser.role));
         }
 

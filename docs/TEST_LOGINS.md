@@ -1,36 +1,37 @@
 # 🔐 Credenciais de Teste - EduInteligência SaaS
 
-Use estas credenciais para navegar pelas diferentes perspectivas do sistema durante a sua apresentação.
+Use estas credenciais para navegar pelas diferentes perspectivas do sistema durante a sua apresentação. Você pode entrar usando tanto o **E-mail** quanto o **CPF**.
 
 ## 🏢 1. Administrador da Escola (Manager)
-**Função:** Visão Executiva, Gestão de Impacto e EWS.
 - **E-mail:** `admin@escola.com`
+- **CPF:** `222.222.222-22`
 - **Senha:** `123456`
 - **O que testar:** Dashboard de Gestão de Impacto, Lançamento EWS, Configurações da Escola.
 
 ## 🧠 2. Psicólogo Escolar
-**Função:** Triagem de Risco, PEI e Intervenções de Camada 3.
 - **E-mail:** `psi@escola.com`
+- **CPF:** `333.333.333-33`
 - **Senha:** `123456`
-- **O que testar:** Student Profile, Criação de PEI (Individual Intervention Plan), Protocolo de Crise (PDF).
+- **O que testar:** Student Profile, Criação de PEI, Protocolo de Crise (PDF).
 
 ## 🍎 3. Professor
-**Função:** Triagem SRSS-IE e Mapa de Risco da Turma.
 - **E-mail:** `professor@escola.com`
+- **CPF:** `444.444.444-44`
 - **Senha:** `123456`
-- **O que testar:** Dashboard da Turma, Realização de Triagem SRSS-IE para alunos.
+- **O que testar:** Dashboard da Turma, Realização de Triagem SRSS-IE.
 
 ## 🎓 4. Aluno
-**Função:** Autoconhecimento e Forças de Caráter (VIA).
 - **E-mail:** `aluno@escola.com`
+- **CPF:** `555.555.555-55`
 - **Senha:** `123456`
-- **O que testar:** Responder questionário VIA, visualizar Radar de Forças e Forças de Assinatura.
+- **O que testar:** Responder questionário VIA, visualizar Radar de Forças.
 
 ---
 
-## 🛠️ Super Admin (Painel SaaS Global)
+## 🛠️ Super Admin (Global)
 Acesso restrito para gestão de faturamento e novas escolas.
-- **E-mail:** `geisonhoehr@gmail.com` (ou o definido no `.env`)
+- **E-mail:** `geisonhoehr@gmail.com`
+- **CPF:** `111.111.111-11`
 - **Senha:** `123456`
 - **Rota:** `/super-admin`
 

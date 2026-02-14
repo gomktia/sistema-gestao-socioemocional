@@ -18,11 +18,11 @@ async function main() {
 
     // 2. Criar Usuários de Teste (Serão vinculados por e-mail no primeiro login)
     const usersToCreate = [
-        { email: 'admin@escola.com', name: 'Diretor Geral', role: 'MANAGER' },
-        { email: 'psi@escola.com', name: 'Dr. Roberto Mendes', role: 'PSYCHOLOGIST' },
-        { email: 'professor@escola.com', name: 'Prof. Marcos Souza', role: 'TEACHER' },
-        { email: 'aluno@escola.com', name: 'Ana Beatriz Silva', role: 'STUDENT' },
-        { email: 'geisonhoehr@gmail.com', name: 'Geison SuperAdmin', role: 'ADMIN' },
+        { email: 'admin@escola.com', name: 'Diretor Geral', role: 'MANAGER', cpf: '22222222222' },
+        { email: 'psi@escola.com', name: 'Dr. Roberto Mendes', role: 'PSYCHOLOGIST', cpf: '33333333333' },
+        { email: 'professor@escola.com', name: 'Prof. Marcos Souza', role: 'TEACHER', cpf: '44444444444' },
+        { email: 'aluno@escola.com', name: 'Ana Beatriz Silva', role: 'STUDENT', cpf: '55555555555' },
+        { email: 'geisonhoehr@gmail.com', name: 'Geison SuperAdmin', role: 'ADMIN', cpf: '11111111111' },
     ];
 
     console.log('Criando usuários de teste...');
@@ -30,12 +30,13 @@ async function main() {
     for (const u of usersToCreate) {
         const user = await prisma.user.upsert({
             where: { tenantId_email: { tenantId: tenant.id, email: u.email } },
-            update: { role: u.role, name: u.name },
+            update: { role: u.role, name: u.name, cpf: u.cpf },
             create: {
                 tenantId: tenant.id,
                 email: u.email,
                 name: u.name,
                 role: u.role,
+                cpf: u.cpf,
             },
         });
         createdUsers[u.role] = user;
@@ -71,6 +72,7 @@ async function main() {
                 grade: grade,
                 enrollmentId: name.replace(/ /g, '_').toLowerCase(),
                 isActive: true,
+                cpf: name === 'Ana Beatriz Silva' ? '55555555555' : null,
             },
         });
 
@@ -150,6 +152,39 @@ async function main() {
                 }
             });
         }
+    }
+
+    // 4. Criar Perguntas do Formulário (SRSS-IE)
+    console.log('Populando biblioteca de protocolos (SRSS-IE)...');
+    const srssItems = [
+        { n: 1, t: 'Furto / Pegar coisas sem permissão', c: 'Externalizante' },
+        { n: 2, t: 'Mentira, trapaça ou dissimulação', c: 'Externalizante' },
+        { n: 3, t: 'Problemas de comportamento (indisciplina ativa)', c: 'Externalizante' },
+        { n: 4, t: 'Rejeição pelos colegas (isolado pelo grupo)', c: 'Externalizante' },
+        { n: 5, t: 'Baixo desempenho acadêmico (aquém do potencial)', c: 'Externalizante' },
+        { n: 6, t: 'Atitude negativa / Desafiadora', c: 'Externalizante' },
+        { n: 7, t: 'Comportamento agressivo (físico ou verbal)', c: 'Externalizante' },
+        { n: 8, t: 'Apatia emocional (pouca expressão facial/reação)', c: 'Internalizante' },
+        { n: 9, t: 'Tímido / Retraído / Evita interação', c: 'Internalizante' },
+        { n: 10, t: 'Triste / Deprimido / Melancólico', c: 'Internalizante' },
+        { n: 11, t: 'Ansioso / Nervoso / Preocupado excessivamente', c: 'Internalizante' },
+        { n: 12, t: 'Solitário (passa intervalos sozinho)', c: 'Internalizante' },
+    ];
+
+    for (const item of srssItems) {
+        await prisma.formQuestion.upsert({
+            where: { id: `srss-ie-${item.n}` }, // Usando ID fixo para o demo
+            update: { text: item.t, category: item.c },
+            create: {
+                id: `srss-ie-${item.n}`,
+                number: item.n,
+                text: item.t,
+                category: item.c,
+                type: 'SRSS_IE',
+                isActive: true,
+                order: item.n
+            }
+        });
     }
 
     console.log('\n--- Seed concluído com sucesso! ---');

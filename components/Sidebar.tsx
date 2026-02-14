@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NavItem } from './sidebar-nav';
+import { TenantSwitcher } from './TenantSwitcher';
 import {
     LogOut,
     Menu,
@@ -23,7 +24,8 @@ import {
     ChevronRight,
     UserCircle,
     GraduationCap,
-    ShieldAlert
+    ShieldAlert,
+    ChevronDown
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -52,12 +54,15 @@ interface SidebarProps {
     userEmail?: string;
     userRole: string;
     organizationType?: string;
+    tenants?: any[];
+    activeTenantId?: string;
 }
 
-export function Sidebar({ items, userName, userEmail, userRole, organizationType }: SidebarProps) {
+export function Sidebar({ items, userName, userEmail, userRole, organizationType, tenants = [], activeTenantId = '' }: SidebarProps) {
     const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
     useEffect(() => {
         setIsMobileOpen(false);
@@ -95,12 +100,64 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
         </div>
     );
 
+    const toggleGroup = (label: string) => {
+        setExpandedGroups(prev =>
+            prev.includes(label) ? prev.filter(i => i !== label) : [...prev, label]
+        );
+    };
+
     const NavList = () => (
         <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
             {items.map((item) => {
                 const Icon = ICON_MAP[item.iconName] || Home;
+                const hasChildren = item.children && item.children.length > 0;
+                const isExpanded = expandedGroups.includes(item.label);
                 const isActive = pathname === item.href || (item.href !== '/' && item.href !== '/super-admin' && pathname.startsWith(item.href));
-                const isExactActive = pathname === item.href;
+
+                if (hasChildren) {
+                    return (
+                        <div key={item.label} className="space-y-1">
+                            <button
+                                onClick={() => toggleGroup(item.label)}
+                                className={cn(
+                                    "w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group",
+                                    isActive ? "bg-white/5 text-white" : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200",
+                                    isCollapsed && "justify-center px-2"
+                                )}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Icon size={20} strokeWidth={1.5} className={cn("shrink-0", isActive ? "text-indigo-400" : "group-hover:text-indigo-300")} />
+                                    {!isCollapsed && <span className="font-semibold text-[13px]">{item.label}</span>}
+                                </div>
+                                {!isCollapsed && (
+                                    <ChevronDown size={14} className={cn("transition-transform duration-300", isExpanded && "rotate-180")} />
+                                )}
+                            </button>
+
+                            {isExpanded && !isCollapsed && (
+                                <div className="pl-11 space-y-1 animate-in slide-in-from-top-2 duration-300">
+                                    {item.children?.map(child => {
+                                        const ChildIcon = ICON_MAP[child.iconName] || Home;
+                                        const isChildActive = pathname === child.href;
+                                        return (
+                                            <Link
+                                                key={child.href}
+                                                href={child.href}
+                                                className={cn(
+                                                    "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all",
+                                                    isChildActive ? "text-white bg-white/5" : "text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]"
+                                                )}
+                                            >
+                                                <ChildIcon size={14} strokeWidth={1.5} />
+                                                {child.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
 
                 return (
                     <Link
@@ -108,7 +165,7 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
                         href={item.href}
                         className={cn(
                             "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group relative",
-                            (isActive || isExactActive)
+                            isActive
                                 ? "bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl ring-1 ring-white/[0.05]"
                                 : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200",
                             isCollapsed && "justify-center px-2 py-3"
@@ -120,7 +177,7 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
                             strokeWidth={1.5}
                             className={cn(
                                 "shrink-0 transition-all duration-300 group-hover:scale-110",
-                                (isActive || isExactActive) ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]" : "group-hover:text-indigo-300"
+                                isActive ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]" : "group-hover:text-indigo-300"
                             )}
                         />
 
@@ -130,7 +187,7 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
                             </span>
                         )}
 
-                        {(isActive || isExactActive) && !isCollapsed && (
+                        {isActive && !isCollapsed && (
                             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 bg-indigo-400 rounded-r-full shadow-[0_0_12px_#818cf8]" />
                         )}
                     </Link>
@@ -208,6 +265,11 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
             )}>
                 <CollapseToggle />
                 <SidebarHeader />
+                <TenantSwitcher
+                    tenants={tenants}
+                    activeTenantId={activeTenantId}
+                    isCollapsed={isCollapsed}
+                />
                 <NavList />
                 <UserProfile />
 

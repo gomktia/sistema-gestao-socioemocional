@@ -19,6 +19,7 @@ interface FormQuestion {
     text: string
     category: string | null
     type: 'VIA_STRENGTHS' | 'SRSS_IE'
+    educationalLevel: 'KINDERGARTEN' | 'ELEMENTARY' | 'HIGH_SCHOOL'
     isActive: boolean
     order: number
     weight: number
@@ -26,9 +27,10 @@ interface FormQuestion {
 
 interface FormQuestionsManagerProps {
     initialQuestions: FormQuestion[]
+    canEdit?: boolean
 }
 
-export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerProps) {
+export function FormQuestionsManager({ initialQuestions, canEdit = false }: FormQuestionsManagerProps) {
     const [questions, setQuestions] = useState<FormQuestion[]>(initialQuestions)
     const [search, setSearch] = useState('')
     const [selectedType, setSelectedType] = useState<'ALL' | 'VIA_STRENGTHS' | 'SRSS_IE'>('ALL')
@@ -99,6 +101,7 @@ export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerP
                     number: Number(currentQuestion.number),
                     category: currentQuestion.category || undefined,
                     type: currentQuestion.type as any,
+                    educationalLevel: currentQuestion.educationalLevel as any,
                     isActive: currentQuestion.isActive
                 })
                 if (res.success && res.data) {
@@ -157,9 +160,11 @@ export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerP
                         <option value="SRSS_IE">SRSS-IE (Risco)</option>
                     </select>
 
-                    <Button onClick={handleNew} className="bg-brand-600 hover:bg-brand-700">
-                        <PlusIcon className="mr-2 h-4 w-4" /> Nova Pergunta
-                    </Button>
+                    {canEdit && (
+                        <Button onClick={handleNew} className="bg-brand-600 hover:bg-brand-700">
+                            <PlusIcon className="mr-2 h-4 w-4" /> Nova Pergunta
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -182,9 +187,11 @@ export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerP
                                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => handleEdit(question)}>
                                     <PencilIcon className="h-4 w-4 text-slate-500" />
                                 </Button>
-                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(question.id)}>
-                                    <TrashIcon className="h-4 w-4" />
-                                </Button>
+                                {canEdit && (
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(question.id)}>
+                                        <TrashIcon className="h-4 w-4" />
+                                    </Button>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="p-4 pt-1">
@@ -222,12 +229,28 @@ export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerP
                             <Label htmlFor="type" className="text-right">Tipo</Label>
                             <select
                                 id="type"
+                                disabled={!canEdit}
                                 className="col-span-3 h-10 px-3 rounded-md border border-input bg-white text-sm w-full"
                                 value={currentQuestion.type || 'VIA_STRENGTHS'}
                                 onChange={(e) => setCurrentQuestion({ ...currentQuestion, type: e.target.value as any })}
                             >
                                 <option value="VIA_STRENGTHS">VIA (Forças)</option>
                                 <option value="SRSS_IE">SRSS-IE (Risco)</option>
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="level" className="text-right">Nível</Label>
+                            <select
+                                id="level"
+                                disabled={!canEdit}
+                                className="col-span-3 h-10 px-3 rounded-md border border-input bg-white text-sm w-full"
+                                value={currentQuestion.educationalLevel || 'HIGH_SCHOOL'}
+                                onChange={(e) => setCurrentQuestion({ ...currentQuestion, educationalLevel: e.target.value as any })}
+                            >
+                                <option value="KINDERGARTEN">Infantil</option>
+                                <option value="ELEMENTARY">Fundamental</option>
+                                <option value="HIGH_SCHOOL">Médio</option>
                             </select>
                         </div>
 
@@ -281,6 +304,7 @@ export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerP
                             <Label htmlFor="text" className="text-right pt-2">Texto</Label>
                             <Textarea
                                 id="text"
+                                disabled={!canEdit}
                                 value={currentQuestion.text || ''}
                                 onChange={(e) => setCurrentQuestion({ ...currentQuestion, text: e.target.value })}
                                 className="col-span-3 min-h-[100px]"
@@ -305,14 +329,18 @@ export function FormQuestionsManager({ initialQuestions }: FormQuestionsManagerP
                     </div>
 
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSave} disabled={isLoading} className="bg-brand-600">
-                            {isLoading ? 'Salvando...' : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" /> Salvar Alterações
-                                </>
-                            )}
+                        <Button variant="outline" onClick={() => setIsOpen(false)}>
+                            {canEdit ? 'Cancelar' : 'Fechar'}
                         </Button>
+                        {canEdit && (
+                            <Button onClick={handleSave} disabled={isLoading} className="bg-brand-600">
+                                {isLoading ? 'Salvando...' : (
+                                    <>
+                                        <Save className="mr-2 h-4 w-4" /> Salvar Alterações
+                                    </>
+                                )}
+                            </Button>
+                        )}
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

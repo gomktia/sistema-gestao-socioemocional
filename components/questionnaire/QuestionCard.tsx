@@ -1,8 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { Circle, Check } from 'lucide-react';
 
-const EMOJIS = ['😟', '😕', '😐', '🙂', '😄'];
 const LABELS = [
     'Nada a ver comigo',
     'Pouco a ver',
@@ -12,11 +12,11 @@ const LABELS = [
 ];
 
 const SELECTED_COLORS = [
-    { bg: 'bg-rose-50', border: 'border-rose-400', text: 'text-rose-600', shadow: 'shadow-rose-100' },
-    { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-600', shadow: 'shadow-amber-100' },
-    { bg: 'bg-slate-50', border: 'border-slate-400', text: 'text-slate-600', shadow: 'shadow-slate-100' },
-    { bg: 'bg-sky-50', border: 'border-sky-400', text: 'text-sky-600', shadow: 'shadow-sky-100' },
-    { bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-600', shadow: 'shadow-emerald-100' },
+    { bg: 'bg-slate-100', border: 'border-slate-300', text: 'text-slate-900', ring: 'ring-slate-400' },
+    { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', ring: 'ring-blue-300' },
+    { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', ring: 'ring-indigo-300' },
+    { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-900', ring: 'ring-violet-300' },
+    { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', ring: 'ring-purple-300' },
 ];
 
 interface QuestionCardProps {
@@ -27,30 +27,71 @@ interface QuestionCardProps {
     highlight?: boolean;
 }
 
+function IntensityIcon({ level, isSelected }: { level: number; isSelected: boolean }) {
+    // Escala visual: círculos concêntricos crescendo
+    // level 0: 1 círculo pequeno
+    // level 4: Círculo cheio grande
+
+    const size = 24 + (level * 6); // 24, 30, 36, 42, 48 px
+    const opacity = 0.3 + (level * 0.15); // 0.3, 0.45, 0.6, 0.75, 0.9
+
+    return (
+        <div className="relative flex items-center justify-center h-14 w-14">
+            {/* Base ghost circle */}
+            <div className={cn(
+                "absolute rounded-full border-2 transition-all duration-300",
+                isSelected ? "border-current opacity-100 scale-100" : "border-slate-200 scale-90"
+            )}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    opacity: isSelected ? 1 : 0.5
+                }} />
+
+            {/* Active filled circle */}
+            <div
+                className={cn(
+                    "rounded-full transition-all duration-300 shadow-sm",
+                    isSelected ? "bg-current" : "bg-slate-300"
+                )}
+                style={{
+                    width: `${35 + (level * 12)}%`,
+                    height: `${35 + (level * 12)}%`,
+                    opacity: isSelected ? 1 : opacity
+                }}
+            />
+
+            {isSelected && (
+                <Check className="absolute text-white w-5 h-5 animate-in zoom-in duration-300" strokeWidth={3} />
+            )}
+        </div>
+    );
+}
+
 export function QuestionCard({ number, text, value, onChange, highlight }: QuestionCardProps) {
     return (
         <div className={cn(
-            "bg-white rounded-3xl p-6 sm:p-7 space-y-5 transition-all duration-300",
-            "shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)]",
-            highlight && value === undefined && "ring-2 ring-rose-300 animate-[pulse_1.5s_ease-in-out_2]",
-            value !== undefined && "ring-1 ring-emerald-200/60"
+            "bg-white rounded-3xl p-6 sm:p-8 space-y-6 transition-all duration-500",
+            "shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-slate-100",
+            highlight && value === undefined && "ring-2 ring-rose-400 animate-[pulse_1.5s_ease-in-out_2]",
+            value !== undefined && "ring-2 ring-emerald-500/20 bg-emerald-50/10"
         )}>
-            <div className="flex gap-4 items-start">
+            <div className="flex gap-5 items-start">
                 <span className={cn(
-                    "flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-xl text-xs font-black transition-colors",
+                    "flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black transition-colors shadow-sm",
                     value !== undefined
-                        ? "bg-emerald-100 text-emerald-600"
-                        : "bg-indigo-100 text-indigo-600"
+                        ? "bg-emerald-500 text-white shadow-emerald-200"
+                        : "bg-slate-100 text-slate-500"
                 )}>
-                    {value !== undefined ? '✓' : number}
+                    {value !== undefined ? <Check size={18} strokeWidth={3} /> : number}
                 </span>
-                <p className="text-slate-800 font-semibold leading-relaxed text-[15px]">
+                <p className="text-slate-900 font-bold leading-relaxed text-lg tracking-tight">
                     {text}
                 </p>
             </div>
 
-            <div className="grid grid-cols-5 gap-2 sm:gap-3">
-                {EMOJIS.map((emoji, i) => {
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 sm:gap-4">
+                {LABELS.map((label, i) => {
                     const isSelected = value === i;
                     const colors = SELECTED_COLORS[i];
                     return (
@@ -59,23 +100,24 @@ export function QuestionCard({ number, text, value, onChange, highlight }: Quest
                             type="button"
                             onClick={() => onChange(i)}
                             className={cn(
-                                'flex flex-col items-center gap-2.5 rounded-2xl p-3 sm:p-4 transition-all duration-200 border-2 cursor-pointer',
+                                'group flex flex-row sm:flex-col items-center justify-start sm:justify-between gap-4 sm:gap-3 rounded-2xl p-3 sm:p-4 transition-all duration-300 cursor-pointer relative overflow-hidden text-left sm:text-center w-full',
                                 isSelected
-                                    ? `${colors.bg} ${colors.border} shadow-lg ${colors.shadow} scale-[1.03]`
-                                    : 'bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200 hover:shadow-md active:scale-95'
+                                    ? `${colors.bg} ${colors.border} ring-2 ${colors.ring} shadow-md scale-[1.01] sm:scale-105`
+                                    : 'bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-300 hover:shadow-sm active:scale-95'
                             )}
                         >
+                            <div className={cn("transition-colors duration-300 shrink-0", isSelected ? colors.text : "text-slate-400 group-hover:text-slate-500")}>
+                                {/* Mobile: slightly smaller, Desktop: normal */}
+                                <div className="scale-90 sm:scale-100 origin-center">
+                                    <IntensityIcon level={i} isSelected={isSelected} />
+                                </div>
+                            </div>
+
                             <span className={cn(
-                                'text-2xl sm:text-3xl transition-all duration-200',
-                                isSelected ? 'scale-110 drop-shadow-sm' : 'grayscale-[0.4] opacity-60 hover:opacity-90 hover:grayscale-0'
+                                'text-xs sm:text-[10px] md:text-xs font-bold uppercase tracking-wide leading-tight transition-colors duration-200',
+                                isSelected ? colors.text : 'text-slate-500 font-semibold'
                             )}>
-                                {emoji}
-                            </span>
-                            <span className={cn(
-                                'text-[8px] sm:text-[10px] font-extrabold uppercase tracking-tight text-center leading-tight',
-                                isSelected ? colors.text : 'text-slate-400'
-                            )}>
-                                {LABELS[i]}
+                                {label}
                             </span>
                         </button>
                     );
@@ -84,3 +126,4 @@ export function QuestionCard({ number, text, value, onChange, highlight }: Quest
         </div>
     );
 }
+

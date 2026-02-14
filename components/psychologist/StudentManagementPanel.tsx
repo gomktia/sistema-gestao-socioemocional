@@ -35,15 +35,20 @@ export function StudentManagementPanel({ studentId, initialIsFormEnabled, studen
         setIsFormEnabled(checked)
         setLoading(true)
         try {
-            await toggleFormAccess(studentId, checked, duration)
-            if (checked && duration) {
-                toast.success(`Acesso liberado por ${duration}h`)
+            const res = await toggleFormAccess(studentId, checked, duration) as any
+            if (res.success) {
+                if (checked && duration) {
+                    toast.success(`Acesso liberado por ${duration}h`)
+                } else {
+                    toast.success(checked ? 'Acesso liberado permanentemente' : 'Acesso bloqueado')
+                }
             } else {
-                toast.success(checked ? 'Acesso liberado permanentemente' : 'Acesso bloqueado')
+                if (!duration) setIsFormEnabled(!checked)
+                toast.error('Erro: ' + (res.error || 'Falha ao alterar acesso'))
             }
         } catch (error) {
             if (!duration) setIsFormEnabled(!checked) // Revert only if toggle
-            toast.error('Erro ao alterar acesso')
+            toast.error('Erro de conexão ao alterar acesso')
         } finally {
             setLoading(false)
         }
@@ -55,10 +60,16 @@ export function StudentManagementPanel({ studentId, initialIsFormEnabled, studen
 
         setLoading(true)
         try {
-            await resetAssessment(studentId, type)
-            toast.success('Respostas resetadas com sucesso')
+            const res = await resetAssessment(studentId, type) as any
+            if (res.success) {
+                toast.success('Respostas resetadas com sucesso')
+                // A navegação automática deve ocorrer via revalidatePath, 
+                // mas podemos forçar um refresh se necessário
+            } else {
+                toast.error('Erro: ' + (res.error || 'Falha ao resetar'))
+            }
         } catch (error) {
-            toast.error('Erro ao resetar respostas')
+            toast.error('Erro de conexão ao resetar respostas')
         } finally {
             setLoading(false)
         }
@@ -68,24 +79,16 @@ export function StudentManagementPanel({ studentId, initialIsFormEnabled, studen
     const handleGenerateLink = async () => {
         setLoading(true)
         try {
-            // Note: In real implementation, need to fetch the actual URL from action
-            // The action I wrote returns { success: true, url: ... }
-            // Let's call it.
-            // Wait, generateOnboardingLink is not exported yet? Or maybe I used a different function name in previous step?
-            // "generateOnboardingLink" was the name.
-
-            // However, the action returns an object. I need to parse it.
-            // Oh, since this is a client component, I need to call the server action.
             const result = await generateOnboardingLink(studentId) as any
             if (result.success && result.url) {
                 setInviteLink(result.url)
                 navigator.clipboard.writeText(result.url)
                 toast.success('Link copiado para a área de transferência!')
             } else {
-                toast.error('Erro ao gerar link')
+                toast.error('Erro: ' + (result.error || 'Falha ao gerar link'))
             }
         } catch (error) {
-            toast.error('Erro ao gerar link')
+            toast.error('Erro de conexão ao gerar link')
         } finally {
             setLoading(false)
         }

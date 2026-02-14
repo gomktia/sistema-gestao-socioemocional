@@ -3,10 +3,18 @@
 import { useState, useCallback, useRef } from 'react';
 import { TierBadge } from '@/components/domain/TierBadge';
 import { saveSRSSScreening } from '@/app/actions/assessment';
-import { SRSS_ITEMS } from '@/src/core/logic/scoring';
+import { SRSS_ITEMS } from '@core/logic/scoring';
 import { cn } from '@/lib/utils';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import type { OrganizationLabels } from '@/src/lib/utils/labels';
+
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from 'lucide-react';
 
 const ALL_ITEMS = [...SRSS_ITEMS.externalizing, ...SRSS_ITEMS.internalizing];
 
@@ -22,10 +30,17 @@ interface StudentData {
     error?: string;
 }
 
+interface FormQuestion {
+    number: number;
+    text: string;
+    category?: string | null;
+}
+
 interface SRSSGridProps {
     students: Student[];
     existingData: Record<string, StudentData>;
     labels?: OrganizationLabels;
+    questions?: FormQuestion[];
 }
 
 const VALUE_STYLES = [
@@ -35,9 +50,15 @@ const VALUE_STYLES = [
     { cell: 'bg-rose-50 border-rose-200 text-rose-700', dot: 'bg-rose-400' },
 ];
 
-export function SRSSGrid({ students, existingData, labels }: SRSSGridProps) {
+export function SRSSGrid({ students, existingData, labels, questions }: SRSSGridProps) {
     const [data, setData] = useState<Record<string, StudentData>>(existingData);
     const saveTimeout = useRef<Record<string, NodeJS.Timeout>>({});
+
+    const getQuestionText = (num: number) => {
+        return questions?.find(q => q.number === num)?.text ||
+            ALL_ITEMS.find(i => i.item === num)?.label ||
+            `Questão ${num}`;
+    };
 
     const handleCellClick = useCallback((studentId: string, itemNum: number) => {
         setData((prev) => {
@@ -80,35 +101,46 @@ export function SRSSGrid({ students, existingData, labels }: SRSSGridProps) {
     }, []);
 
     return (
-        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-100">
+            <div className="flex items-center justify-between p-6 border-b border-slate-50">
+                <div className="flex items-center gap-3">
+                    <Info size={20} className="text-indigo-500" />
+                    <h3 className="font-black text-slate-800 tracking-tight">Instrumento de Rastreio</h3>
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                     <thead>
-                        <tr className="bg-slate-50/80">
-                            <th className="text-left p-5 sticky left-0 bg-slate-50/95 backdrop-blur-sm z-10 min-w-[200px] font-extrabold text-slate-600 text-xs uppercase tracking-widest border-b border-slate-100">
+                        <tr className="bg-slate-50/50">
+                            <th className="text-left p-6 sticky left-0 bg-white/95 backdrop-blur-sm z-10 min-w-[240px] font-extrabold text-slate-500 text-[11px] uppercase tracking-[0.1em] border-b border-slate-100">
                                 Nome do {labels?.subject ?? 'Aluno'}
                             </th>
                             {ALL_ITEMS.map((item, idx) => (
                                 <th key={item.item} className={cn(
-                                    "p-2 text-center w-12 group relative border-b border-slate-100",
-                                    idx === 6 && "border-l-2 border-l-slate-200"
+                                    "p-2 text-center w-14 border-b border-slate-100",
+                                    idx === 6 && "border-r-2 border-r-slate-100"
                                 )}>
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Q{item.item}</span>
-                                        <div className="h-7 w-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shadow-sm">
-                                            {item.item}
-                                        </div>
-                                    </div>
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20 w-52 p-3 bg-slate-900 text-white text-[10px] rounded-2xl shadow-2xl leading-relaxed font-medium">
-                                        {item.label}
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-900 rotate-45" />
-                                    </div>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex flex-col items-center gap-1.5 cursor-help group">
+                                                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest transition-colors group-hover:text-indigo-500">Q{item.item}</span>
+                                                <div className="h-9 w-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[12px] font-black text-slate-600 shadow-sm transition-all group-hover:shadow-md group-hover:border-indigo-200 group-hover:text-indigo-600 group-active:scale-90">
+                                                    {item.item}
+                                                </div>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-[220px] p-4 rounded-2xl bg-slate-900 border-slate-800 shadow-2xl">
+                                            <p className="text-[11px] font-bold text-white leading-relaxed">
+                                                <span className="text-indigo-400">Questão {item.item}:</span><br />
+                                                {getQuestionText(item.item)}
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </th>
                             ))}
-                            <th className="p-5 text-center min-w-[120px] font-extrabold text-slate-600 text-xs uppercase tracking-widest border-b border-slate-100">Rastreio RTI</th>
-                            <th className="p-5 text-center w-12 border-b border-slate-100">
-                                <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Status</span>
-                            </th>
+                            <th className="p-6 text-center min-w-[140px] font-extrabold text-slate-500 text-[11px] uppercase tracking-[0.1em] border-b border-slate-100">Rastreio RTI</th>
+                            <th className="p-6 text-center w-16 border-b border-slate-100 font-extrabold text-slate-500 text-[11px] uppercase tracking-[0.1em]">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,11 +148,11 @@ export function SRSSGrid({ students, existingData, labels }: SRSSGridProps) {
                             const studentData = data[student.id] ?? { answers: {} };
                             return (
                                 <tr key={student.id} className={cn(
-                                    "hover:bg-indigo-50/30 transition-colors group/row",
-                                    rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+                                    "hover:bg-indigo-50/20 transition-colors group/row",
+                                    rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'
                                 )}>
-                                    <td className="p-4 sticky left-0 bg-white/95 backdrop-blur-sm font-semibold text-slate-700 z-10 border-b border-slate-50 group-hover/row:bg-indigo-50/30">
-                                        <div className="truncate max-w-[180px] text-sm">{student.name}</div>
+                                    <td className="p-5 sticky left-0 bg-white/95 backdrop-blur-sm font-bold text-slate-700 z-10 border-b border-slate-50 group-hover/row:bg-indigo-50/20">
+                                        <div className="truncate max-w-[200px] text-sm tracking-tight">{student.name}</div>
                                     </td>
                                     {ALL_ITEMS.map((item, idx) => {
                                         const val = studentData.answers[item.item];
@@ -128,15 +160,15 @@ export function SRSSGrid({ students, existingData, labels }: SRSSGridProps) {
                                         return (
                                             <td key={item.item} className={cn(
                                                 "p-1 text-center border-b border-slate-50",
-                                                idx === 6 && "border-l-2 border-l-slate-100"
+                                                idx === 6 && "border-r-2 border-r-slate-50"
                                             )}>
                                                 <button
                                                     onClick={() => handleCellClick(student.id, item.item)}
                                                     className={cn(
-                                                        'w-9 h-9 rounded-xl text-sm font-black transition-all active:scale-90 border cursor-pointer',
+                                                        'w-10 h-10 rounded-xl text-[13px] font-black transition-all active:scale-90 border cursor-pointer',
                                                         style
-                                                            ? `${style.cell} hover:shadow-md`
-                                                            : 'bg-slate-50 border-slate-100 text-slate-300 hover:bg-slate-100 hover:border-slate-200',
+                                                            ? `${style.cell} shadow-sm hover:shadow-md`
+                                                            : 'bg-slate-50/50 border-slate-100 text-slate-300 hover:bg-slate-100 hover:border-slate-200',
                                                     )}
                                                 >
                                                     {val ?? '-'}
@@ -144,22 +176,22 @@ export function SRSSGrid({ students, existingData, labels }: SRSSGridProps) {
                                             </td>
                                         );
                                     })}
-                                    <td className="p-4 text-center border-b border-slate-50">
+                                    <td className="p-5 text-center border-b border-slate-50">
                                         {studentData.tier ? (
-                                            <TierBadge tier={studentData.tier} showLabel={false} className="px-3" />
+                                            <TierBadge tier={studentData.tier} showLabel={false} className="px-4 py-1.5 rounded-xl text-[10px] font-black" />
                                         ) : (
-                                            <span className="text-[10px] text-slate-300 font-extrabold uppercase tracking-widest">Incompleto</span>
+                                            <span className="text-[10px] text-slate-300 font-black uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl border border-dotted border-slate-200">Em Aberto</span>
                                         )}
                                     </td>
-                                    <td className="p-4 text-center border-b border-slate-50">
+                                    <td className="p-5 text-center border-b border-slate-50">
                                         {studentData.isSaving ? (
-                                            <Loader2 size={16} className="animate-spin text-indigo-500 mx-auto" />
+                                            <Loader2 size={16} className="animate-spin text-indigo-500 mx-auto" strokeWidth={3} />
                                         ) : studentData.error ? (
                                             <div className="flex items-center justify-center" title={studentData.error}>
-                                                <AlertCircle size={16} className="text-rose-500" strokeWidth={1.5} />
+                                                <AlertCircle size={18} className="text-rose-500" strokeWidth={2} />
                                             </div>
                                         ) : (
-                                            <Check size={16} className="text-emerald-400 mx-auto opacity-40" strokeWidth={2} />
+                                            <Check size={18} className="text-emerald-500 mx-auto opacity-40 group-hover/row:opacity-100 transition-opacity" strokeWidth={2.5} />
                                         )}
                                     </td>
                                 </tr>
@@ -169,19 +201,22 @@ export function SRSSGrid({ students, existingData, labels }: SRSSGridProps) {
                 </table>
             </div>
 
-            <div className="bg-slate-50/50 p-5 border-t border-slate-100">
-                <div className="flex flex-wrap gap-5 text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
+            <div className="bg-slate-50/50 p-6 border-t border-slate-100 flex items-center justify-between">
+                <div className="flex flex-wrap gap-8 text-[11px] font-black uppercase tracking-widest text-slate-400">
                     {[
                         { label: '0: Nunca', style: VALUE_STYLES[0] },
                         { label: '1: Ocasionalmente', style: VALUE_STYLES[1] },
                         { label: '2: Frequentemente', style: VALUE_STYLES[2] },
                         { label: '3: Muito Frequentemente', style: VALUE_STYLES[3] },
                     ].map(({ label, style }) => (
-                        <div key={label} className="flex items-center gap-2">
-                            <div className={cn("w-4 h-4 rounded-lg border", style.cell)} />
+                        <div key={label} className="flex items-center gap-3">
+                            <div className={cn("w-5 h-5 rounded-lg border shadow-sm", style.cell)} />
                             {label}
                         </div>
                     ))}
+                </div>
+                <div className="text-[10px] font-medium text-slate-400 italic">
+                    Referência: Protocolo SRSS (Student Risk Screening Scale)
                 </div>
             </div>
         </div>

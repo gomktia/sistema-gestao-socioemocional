@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+// ... imports
+import { useState, useTransition, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { VIA_ITEMS_BY_VIRTUE, VIA_ITEM_TEXTS } from '@/src/core/content/questionnaire-items';
 import { QuestionCard } from './QuestionCard';
 import { saveVIAAnswers } from '@/app/actions/assessment';
-import { ChevronLeft, ChevronRight, Save, CheckCircle2, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, CheckCircle2, Loader2, Sparkles, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { VIARawAnswers } from '@/src/core/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -24,10 +25,12 @@ const STEP_COLORS = [
 export function QuestionnaireWizard({
     initialAnswers = {},
     studentId,
+    studentName = 'Aluno',
     isInterviewMode = false
 }: {
     initialAnswers?: VIARawAnswers
     studentId?: string
+    studentName?: string
     isInterviewMode?: boolean
 }) {
     const [currentStepIdx, setCurrentStepIdx] = useState(0);
@@ -35,6 +38,7 @@ export function QuestionnaireWizard({
     const [isSaving, setIsSaving] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [showValidation, setShowValidation] = useState(false);
+    const [isFocusMode, setIsFocusMode] = useState(true); // Default to focus mode
     const router = useRouter();
 
     const currentStepKey = STEPS[currentStepIdx];
@@ -101,155 +105,236 @@ export function QuestionnaireWizard({
     const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6 pb-28">
-            {/* Header com Progresso - Premium */}
-            <div className="sticky top-16 lg:top-0 z-30 bg-slate-50/80 backdrop-blur-xl pt-4 pb-5 space-y-5">
-                {/* Step indicators */}
-                <div className="flex items-center gap-1.5 px-1">
-                    {STEPS.map((_, idx) => {
-                        const stepItems = VIA_ITEMS_BY_VIRTUE[STEPS[idx]].items;
-                        const stepAnswered = stepItems.every(num => answers[num] !== undefined);
-                        return (
-                            <div
-                                key={idx}
-                                className={cn(
-                                    "h-1.5 flex-1 rounded-full transition-all duration-500",
-                                    idx === currentStepIdx
-                                        ? `bg-gradient-to-r ${STEP_COLORS[idx % STEP_COLORS.length].from} ${STEP_COLORS[idx % STEP_COLORS.length].to}`
-                                        : stepAnswered
-                                            ? 'bg-emerald-400'
-                                            : idx < currentStepIdx
-                                                ? 'bg-slate-300'
-                                                : 'bg-slate-200'
-                                )}
-                            />
-                        );
-                    })}
-                </div>
+        <div className={cn(
+            "transition-all duration-500 ease-in-out",
+            isFocusMode ? "fixed inset-0 z-[100] bg-slate-50 overflow-y-auto" : ""
+        )}>
+            {/* Focus Mode Header */}
+            {isFocusMode && (
+                <header className="fixed top-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 z-50 px-6 sm:px-10 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3.5">
+                        <div className="h-10 w-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-black/5">
+                            <span className="text-white font-black text-lg">GS</span>
+                        </div>
+                        <div className="hidden sm:block">
+                            <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">EduInteligência</h2>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avaliação Socioemocional</span>
+                        </div>
+                    </div>
 
-                <div className="flex items-center justify-between px-1">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2.5">
-                            <div className={cn(
-                                "h-9 w-9 rounded-xl bg-gradient-to-br flex items-center justify-center text-white text-sm font-black shadow-lg",
-                                colors.from, colors.to
-                            )}>
-                                {currentStepIdx + 1}
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 bg-slate-100/80 rounded-full pl-1.5 pr-5 py-1.5 border border-slate-200">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-slate-600 font-bold text-xs ring-2 ring-white shadow-sm">
+                                {studentName?.charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                                <h2 className="text-lg font-black text-slate-900 tracking-tight">{stepConfig.label}</h2>
-                                <p className="text-xs text-slate-500">{stepConfig.description}</p>
+                            <div className="text-xs text-right hidden sm:block">
+                                <p className="font-bold text-slate-700 leading-tight">{studentName}</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Aluno</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsFocusMode(false)}
+                            className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all active:scale-95"
+                            title="Sair do Modo Foco"
+                        >
+                            <Minimize2 size={20} strokeWidth={2} />
+                        </button>
+                    </div>
+                </header>
+            )}
+
+            <div className={cn(
+                "max-w-3xl mx-auto space-y-8 pb-32 transition-all duration-500",
+                isFocusMode ? "pt-28 px-4" : "pt-4"
+            )}>
+                {!isFocusMode && (
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={() => setIsFocusMode(true)}
+                            className="flex items-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-colors"
+                        >
+                            <Maximize2 size={14} />
+                            Modo Foco
+                        </button>
+                    </div>
+                )}
+
+                {/* Header com Progresso - Premium */}
+                <div className={cn(
+                    "z-30 space-y-6 transition-all duration-300",
+                    isFocusMode ? "relative" : "sticky top-16 lg:top-0 bg-slate-50/95 backdrop-blur-xl pt-4 pb-4"
+                )}>
+                    {/* Step indicators */}
+                    <div className="flex items-center gap-2 px-1">
+                        {STEPS.map((_, idx) => {
+                            const stepItems = VIA_ITEMS_BY_VIRTUE[STEPS[idx]].items;
+                            const stepAnswered = stepItems.every(num => answers[num] !== undefined);
+                            const isActive = idx === currentStepIdx;
+                            return (
+                                <div
+                                    key={idx}
+                                    className={cn(
+                                        "h-2 flex-1 rounded-full transition-all duration-700 relative overflow-hidden",
+                                        isActive
+                                            ? `bg-gradient-to-r ${STEP_COLORS[idx % STEP_COLORS.length].from} ${STEP_COLORS[idx % STEP_COLORS.length].to} shadow-lg scale-y-125`
+                                            : stepAnswered
+                                                ? 'bg-emerald-400'
+                                                : idx < currentStepIdx
+                                                    ? 'bg-slate-300'
+                                                    : 'bg-slate-200'
+                                    )}
+                                >
+                                    {isActive && <div className="absolute inset-0 bg-white/30 animate-pulse" />}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex items-end justify-between px-1">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                                <div className={cn(
+                                    "h-10 w-10 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white text-base font-black shadow-lg shadow-indigo-100",
+                                    colors.from, colors.to
+                                )}>
+                                    {currentStepIdx + 1}
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none animate-in fade-in slide-in-from-left-4 duration-500 key-[currentStepIdx]">
+                                        {stepConfig.label}
+                                    </h2>
+                                    <p className="text-sm font-medium text-slate-500 mt-1 animate-in fade-in slide-in-from-left-4 duration-700">
+                                        {stepConfig.description}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-right space-y-1 hidden sm:block">
+                            <div className="flex items-baseline justify-end gap-1">
+                                <span className={cn("text-3xl font-black tracking-tight", colors.text)}>{progressPercent}%</span>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Concluído</span>
                             </div>
                         </div>
                     </div>
-                    <div className="text-right space-y-0.5">
-                        <span className={cn("text-xl font-black", colors.text)}>{progressPercent}%</span>
-                        <p className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Concluído</p>
-                    </div>
-                </div>
 
-                {/* Progress bar global */}
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <div
-                        className={cn("h-full bg-gradient-to-r rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(99,102,241,0.3)]", colors.from, colors.to)}
-                        style={{ width: `${progressPercent}%` }}
-                    />
-                </div>
-
-                {/* Contagem da categoria atual */}
-                <div className={cn(
-                    "flex items-center justify-between px-4 py-2.5 rounded-2xl transition-all",
-                    allCurrentAnswered ? "bg-emerald-50" : colors.bg
-                )}>
-                    <span className={cn(
-                        "text-xs font-bold",
-                        allCurrentAnswered ? "text-emerald-600" : colors.text
+                    {/* Contagem da categoria atual */}
+                    <div className={cn(
+                        "flex items-center justify-between px-5 py-3 rounded-2xl transition-all border",
+                        allCurrentAnswered
+                            ? "bg-emerald-50 border-emerald-100 shadow-sm"
+                            : `${colors.bg} border-transparent`
                     )}>
-                        {allCurrentAnswered ? (
-                            <span className="flex items-center gap-1.5">
-                                <CheckCircle2 size={14} strokeWidth={2} /> Todas respondidas nesta categoria!
-                            </span>
-                        ) : (
-                            `${currentStepAnswered} de ${stepConfig.items.length} respondidas nesta categoria`
-                        )}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">
-                        Etapa {currentStepIdx + 1}/{STEPS.length}
-                    </span>
-                </div>
-            </div>
-
-            {/* Alerta de validação */}
-            {showValidation && !allCurrentAnswered && (
-                <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-2xl p-4 animate-in slide-in-from-top duration-300">
-                    <AlertCircle size={20} className="text-rose-500 shrink-0" strokeWidth={1.5} />
-                    <p className="text-sm text-rose-700 font-semibold">
-                        Você ainda tem {unansweredItems.length} {unansweredItems.length === 1 ? 'questão não respondida' : 'questões não respondidas'} nesta página.
-                        Responda todas para avançar.
-                    </p>
-                </div>
-            )}
-
-            {/* Lista de Perguntas do Passo Atual */}
-            <div className="space-y-4">
-                {stepConfig.items.map((num) => (
-                    <div key={num} id={`question-${num}`}>
-                        <QuestionCard
-                            number={num}
-                            text={VIA_ITEM_TEXTS[num]}
-                            value={answers[num]}
-                            onChange={(val) => handleAnswerChange(num, val)}
-                            highlight={showValidation}
-                        />
-                    </div>
-                ))}
-            </div>
-
-            {/* Navegação de Rodapé - Premium */}
-            <div className="fixed bottom-0 left-0 right-0 lg:left-72 bg-white/80 backdrop-blur-xl border-t border-slate-100 p-4 z-40 shadow-[0_-4px_20px_rgb(0,0,0,0.04)]">
-                <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-                    <button
-                        onClick={handleBack}
-                        disabled={currentStepIdx === 0}
-                        className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-2xl disabled:opacity-30 transition-all active:scale-95"
-                    >
-                        <ChevronLeft size={18} strokeWidth={2} />
-                        Anterior
-                    </button>
-
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                        {isPending && <Loader2 size={14} className="animate-spin text-indigo-500" />}
-                        <span className="hidden sm:inline font-medium">
-                            {isPending ? 'Salvando...' : '✓ Progresso salvo'}
+                        <span className={cn(
+                            "text-sm font-bold flex items-center gap-2",
+                            allCurrentAnswered ? "text-emerald-700" : colors.text
+                        )}>
+                            {allCurrentAnswered ? (
+                                <>
+                                    <div className="bg-emerald-200 rounded-full p-0.5"><CheckCircle2 size={16} className="text-emerald-700" /></div>
+                                    Categoria concluída!
+                                </>
+                            ) : (
+                                <>
+                                    <span className="opacity-70">Progresso da seção:</span>
+                                    <span className="text-lg">{currentStepAnswered}</span>
+                                    <span className="opacity-50">/</span>
+                                    <span className="opacity-70">{stepConfig.items.length}</span>
+                                </>
+                            )}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest bg-white/50 px-2 py-1 rounded-lg">
+                            Etapa {currentStepIdx + 1} de {STEPS.length}
                         </span>
                     </div>
+                </div>
 
-                    <button
-                        onClick={handleNext}
-                        disabled={isSaving}
-                        className={cn(
-                            'flex items-center gap-2 px-7 py-3 rounded-2xl text-sm font-extrabold transition-all active:scale-95',
-                            !allCurrentAnswered
-                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                : isLastStep
-                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl shadow-emerald-200 hover:shadow-2xl hover:shadow-emerald-200'
-                                    : `bg-gradient-to-r ${colors.from} ${colors.to} text-white shadow-xl hover:shadow-2xl`
-                        )}
-                    >
-                        {isSaving ? (
-                            <Loader2 size={18} className="animate-spin" />
-                        ) : isLastStep ? (
-                            <>
-                                <Sparkles size={18} strokeWidth={1.5} />
-                                Finalizar e Ver Resultados
-                            </>
-                        ) : (
-                            <>
-                                Próxima Categoria
-                                <ChevronRight size={18} strokeWidth={2} />
-                            </>
-                        )}
-                    </button>
+                {/* Alerta de validação */}
+                {showValidation && !allCurrentAnswered && (
+                    <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-2xl p-4 animate-in slide-in-from-top duration-300 shadow-sm">
+                        <AlertCircle size={22} className="text-rose-500 shrink-0" strokeWidth={2} />
+                        <p className="text-sm text-rose-800 font-bold">
+                            Faltam {unansweredItems.length} questões nesta página. Por favor, responda todas para continuar.
+                        </p>
+                    </div>
+                )}
+
+                {/* Lista de Perguntas do Passo Atual */}
+                {/* Usando key para forçar re-render e animação na troca de step */}
+                <div key={currentStepKey} className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both">
+                    {stepConfig.items.map((num, idx) => (
+                        <div
+                            key={num}
+                            id={`question-${num}`}
+                            className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+                            style={{ animationDelay: `${idx * 50}ms` }}
+                        >
+                            <QuestionCard
+                                number={num}
+                                text={VIA_ITEM_TEXTS[num]}
+                                value={answers[num]}
+                                onChange={(val) => handleAnswerChange(num, val)}
+                                highlight={showValidation}
+                            />
+                        </div>
+                    ))}
+                </div>
+
+                {/* Navegação de Rodapé - Premium */}
+                <div className={cn(
+                    "fixed bottom-0 z-40 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-4px_30px_rgba(0,0,0,0.05)] transition-all duration-300",
+                    isFocusMode ? "left-0 right-0 p-5" : "left-0 right-0 lg:left-72 p-4"
+                )}>
+                    <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+                        <button
+                            onClick={handleBack}
+                            disabled={currentStepIdx === 0}
+                            className="flex items-center gap-2 px-6 py-3.5 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-2xl disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-95"
+                        >
+                            <ChevronLeft size={20} strokeWidth={2.5} />
+                            Anterior
+                        </button>
+
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            {isPending ? (
+                                <span className="flex items-center gap-2 text-indigo-500 animate-pulse">
+                                    <Loader2 size={14} className="animate-spin" />
+                                    Salvando...
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                                    <CheckCircle2 size={12} strokeWidth={3} />
+                                    Salvo
+                                </span>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={handleNext}
+                            disabled={isSaving}
+                            className={cn(
+                                'flex items-center gap-2 px-8 py-3.5 rounded-2xl text-sm font-extrabold transition-all active:scale-95 shadow-lg hover:shadow-xl hover:-translate-y-0.5',
+                                !allCurrentAnswered
+                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none hover:translate-y-0'
+                                    : isLastStep
+                                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-200'
+                                        : `bg-gradient-to-r ${colors.from} ${colors.to} text-white shadow-indigo-200`
+                            )}
+                        >
+                            {isSaving ? (
+                                <Loader2 size={20} className="animate-spin" />
+                            ) : isLastStep ? (
+                                <>
+                                    <Sparkles size={20} strokeWidth={2} />
+                                    Finalizar
+                                </>
+                            ) : (
+                                <>
+                                    Próxima
+                                    <ChevronRight size={20} strokeWidth={2.5} />
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { login } from './actions';
 import { Loader2, Lock, Mail, BrainCircuit, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -11,38 +11,50 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [pending, setPending] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
     const TEST_USERS = [
         { label: 'Super Admin', email: 'geisonhoehr@gmail.com', role: 'SaaS', color: 'bg-slate-900 text-white' },
         { label: 'Gestor', email: 'admin@escola.com', role: 'Escola', color: 'bg-indigo-600 text-white' },
         { label: 'Psicólogo', email: 'psi@escola.com', role: 'Escola', color: 'bg-pink-600 text-white' },
         { label: 'Professor', email: 'professor@escola.com', role: 'Escola', color: 'bg-emerald-600 text-white' },
+        { label: 'Aluno', email: 'aluno@escola.com', role: 'Escola', color: 'bg-amber-500 text-white' },
     ];
 
-    const handleQuickLogin = async (uEmail: string) => {
-        setPending(true);
+    const handleQuickLogin = (uEmail: string) => {
         setError(null);
-        const formData = new FormData();
-        formData.set('email', uEmail);
-        formData.set('password', '123456');
         setEmail(uEmail);
         setPassword('123456');
-        const result = await login(formData);
-        if (result?.error) {
-            setError(result.error);
-            setPending(false);
-        }
+
+        startTransition(async () => {
+            try {
+                const formData = new FormData();
+                formData.set('email', uEmail);
+                formData.set('password', '123456');
+                const result = await login(formData);
+                if (result?.error) {
+                    setError(result.error);
+                }
+            } catch (error: any) {
+                if (error.message === 'NEXT_REDIRECT') return;
+                console.error('Quick login error:', error);
+            }
+        });
     };
 
     async function handleSubmit(formData: FormData) {
-        setPending(true);
         setError(null);
-        const result = await login(formData);
-        if (result?.error) {
-            setError(result.error);
-            setPending(false);
-        }
+        startTransition(async () => {
+            try {
+                const result = await login(formData);
+                if (result?.error) {
+                    setError(result.error);
+                }
+            } catch (error: any) {
+                if (error.message === 'NEXT_REDIRECT') return;
+                console.error('Login error:', error);
+            }
+        });
     }
 
     return (
@@ -128,10 +140,10 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                disabled={pending}
+                                disabled={isPending}
                                 className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 group"
                             >
-                                {pending ? (
+                                {isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Validando Acesso...
@@ -143,6 +155,23 @@ export default function LoginPage() {
                                 )}
                             </Button>
                         </form>
+
+                        <div className="mt-6 text-center">
+                            <p className="text-xs text-slate-500">
+                                Recebeu um código de convite?{' '}
+                                <Link
+                                    href="/convite/CUIDADO-CÓDIGO"
+                                    className="font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const code = window.prompt('Digite seu código de convite:');
+                                        if (code) window.location.href = `/convite/${code}`;
+                                    }}
+                                >
+                                    Ativar minha conta
+                                </Link>
+                            </p>
+                        </div>
 
                         {/* Developer Shortcuts */}
                         <div className="mt-12 pt-8 border-t border-slate-100">

@@ -14,19 +14,27 @@ async function main() {
 
     for (const user of users) {
         try {
-            await prisma.user.update({
-                where: { email: user.email },
-                data: { cpf: user.cpf },
-            })
-            console.log(`Updated CPF for ${user.email}`)
-        } catch (e) {
+            // Since email is scoped by tenantId, we must find the user first or use updateMany if we want to update all users with that email (which likely isn't the intent if they are different users, but here it's seeding demo data).
+            // Assuming we want to update ANY user with this email for the demo.
+            const existingUsers = await prisma.user.findMany({
+                where: { email: user.email }
+            });
+
+            for (const dbUser of existingUsers) {
+                await prisma.user.update({
+                    where: { id: dbUser.id },
+                    data: { cpf: user.cpf },
+                });
+                console.log(`Updated CPF for ${user.email} (ID: ${dbUser.id})`);
+            }
+        } catch (e: any) {
             console.error(`Could not update ${user.email}: ${e.message}`)
         }
     }
 
     // Also update student record for the test student
     try {
-        const studentUser = await prisma.user.findUnique({
+        const studentUser = await prisma.user.findFirst({
             where: { email: 'aluno@escola.com' },
             select: { studentId: true }
         })
@@ -38,7 +46,7 @@ async function main() {
             })
             console.log('Updated Student record CPF for aluno@escola.com')
         }
-    } catch (e) {
+    } catch (e: any) {
         console.error(`Could not update student record: ${e.message}`)
     }
 }

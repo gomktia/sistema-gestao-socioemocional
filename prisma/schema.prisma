@@ -46,7 +46,7 @@ model User {
   cpf               String?           // Changed from @unique to support multi-tenancy links
   name              String
   role              Role
-  supabaseUid       String?           @unique
+  supabaseUid       String?           // @unique removed for multi-tenancy
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -61,6 +61,7 @@ model User {
 
   @@unique([tenantId, email])
   @@unique([tenantId, cpf]) // Added for Multi-Tenancy
+  @@unique([tenantId, supabaseUid]) // Added for Multi-Tenancy
   @@index([tenantId])
   @@index([supabaseUid])
   @@map("users")

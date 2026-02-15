@@ -7,8 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model assessments {
-  id                 String          @id
+model Assessment {
+  id                 String          @id @default(cuid())
   tenantId           String
   studentId          String
   type               AssessmentType
@@ -23,80 +23,85 @@ model assessments {
   internalizingScore Int?
   selfKnowledgeScore Int?
   createdAt          DateTime        @default(now())
-  updatedAt          DateTime
-  users              users?          @relation(fields: [screeningTeacherId], references: [id])
-  students           students        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tenants            tenants         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedAt          DateTime        @updatedAt
+  screeningTeacher   User?           @relation(fields: [screeningTeacherId], references: [id])
+  student            Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([studentId, type, appliedAt])
   @@index([tenantId])
   @@index([tenantId, overallTier])
   @@index([tenantId, studentId])
   @@index([tenantId, type, screeningWindow, academicYear])
+  @@map("assessments")
 }
 
-model audit_logs {
-  id        String   @id
+model AuditLog {
+  id        String   @id @default(cuid())
   userId    String
   action    String
   targetId  String?
   details   Json?
   timestamp DateTime @default(now())
   ip        String?
-  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([action])
   @@index([userId])
+  @@map("audit_logs")
 }
 
-model classrooms {
-  id                 String               @id
+model Classroom {
+  id                 String               @id @default(cuid())
   tenantId           String
   name               String
   grade              GradeLevel
   year               Int
   shift              String?
   createdAt          DateTime             @default(now())
-  tenants            tenants              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  students           students[]
-  teacher_classrooms teacher_classrooms[]
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  students           Student[]
+  teacherClassrooms TeacherClassroom[]
 
   @@unique([tenantId, name, year])
   @@index([tenantId])
+  @@map("classrooms")
 }
 
-model form_questions {
-  id               String           @id
+model FormQuestion {
+  id               String           @id @default(cuid())
   number           Int
   text             String
   category         String?
   type             AssessmentType
   isActive         Boolean          @default(true)
   createdAt        DateTime         @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime         @updatedAt
   order            Int              @default(0)
   weight           Int              @default(1)
   tenantId         String?
   educationalLevel EducationalLevel @default(HIGH_SCHOOL)
-  tenants          tenants?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant           Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, type, number])
+  @@map("form_questions")
 }
 
-model grade_focus_config {
+model GradeFocusConfig {
   id            Int           @id @default(autoincrement())
   grade         GradeLevel
   focus_label   String
   srss_item     Int
   severity      String
   rationale_pt  String
-  srss_ie_items srss_ie_items @relation(fields: [srss_item], references: [item_number])
+  srss_ie_items SrssIeItem @relation(fields: [srss_item], references: [item_number])
 
   @@unique([grade, srss_item])
+  @@map("grade_focus_config")
 }
 
-model intervention_groups {
-  id          String           @id
+model InterventionGroup {
+  id          String           @id @default(cuid())
   tenantId    String
   name        String
   description String?
@@ -104,14 +109,15 @@ model intervention_groups {
   startDate   DateTime
   endDate     DateTime?
   isActive    Boolean          @default(true)
-  tenants     tenants          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  students    students[]       @relation("InterventionGroupToStudent")
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  students    Student[]       @relation("InterventionGroupToStudent")
 
   @@index([tenantId])
+  @@map("intervention_groups")
 }
 
-model intervention_logs {
-  id                String             @id
+model InterventionLog {
+  id                String             @id @default(cuid())
   tenantId          String
   studentId         String
   authorId          String
@@ -128,19 +134,20 @@ model intervention_logs {
   endDate           DateTime?
   nextReview        DateTime?
   createdAt         DateTime           @default(now())
-  updatedAt         DateTime
-  users             users              @relation(fields: [authorId], references: [id])
-  students          students           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tenants           tenants            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime           @updatedAt
+  author            User              @relation(fields: [authorId], references: [id])
+  student           Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, studentId])
   @@index([tenantId, tier])
+  @@map("intervention_logs")
 }
 
-model intervention_plans {
-  id                String    @id
+model InterventionPlan {
+  id                String    @id @default(cuid())
   tenantId          String
   studentId         String
   authorId          String
@@ -151,17 +158,18 @@ model intervention_plans {
   expectedOutcome   String?
   reviewDate        DateTime?
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime
-  users             users     @relation(fields: [authorId], references: [id])
-  students          students  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tenants           tenants   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime  @updatedAt
+  author            User     @relation(fields: [authorId], references: [id])
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([tenantId])
+  @@map("intervention_plans")
 }
 
-model notifications {
-  id        String           @id
+model Notification {
+  id        String           @id @default(cuid())
   tenantId  String
   userId    String?
   studentId String?
@@ -171,17 +179,18 @@ model notifications {
   isRead    Boolean          @default(false)
   link      String?
   createdAt DateTime         @default(now())
-  students  students?        @relation(fields: [studentId], references: [id])
-  tenants   tenants          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  users     users?           @relation(fields: [userId], references: [id])
+  student   Student?        @relation(fields: [studentId], references: [id])
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User?           @relation(fields: [userId], references: [id])
 
   @@index([tenantId, createdAt])
   @@index([tenantId])
   @@index([tenantId, userId, isRead])
+  @@map("notifications")
 }
 
-model school_indicators {
-  id               String   @id
+model SchoolIndicator {
+  id               String   @id @default(cuid())
   tenantId         String
   studentId        String
   academicYear     Int
@@ -191,15 +200,16 @@ model school_indicators {
   disciplinaryLogs Int      @default(0)
   previousAverage  Float?
   createdAt        DateTime @default(now())
-  updatedAt        DateTime
-  students         students @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tenants          tenants  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedAt        DateTime @updatedAt
+  student          Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tenant           Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, academicYear, quarter])
   @@index([tenantId])
+  @@map("school_indicators")
 }
 
-model srss_ie_cutoffs {
+model SrssIeCutoff {
   id        Int      @id @default(autoincrement())
   domain    String
   tier      RiskTier
@@ -209,19 +219,22 @@ model srss_ie_cutoffs {
   action_pt String
 
   @@unique([domain, tier])
+  @@map("srss_ie_cutoffs")
 }
 
-model srss_ie_items {
+model SrssIeItem {
   id                 Int                  @id @default(autoincrement())
   item_number        Int                  @unique
   text_pt            String
   domain             String
   max_score          Int                  @default(3)
-  grade_focus_config grade_focus_config[]
+  gradeFocusConfig GradeFocusConfig[]
+
+  @@map("srss_ie_items")
 }
 
-model student_invitations {
-  id              String    @id
+model StudentInvitation {
+  id              String    @id @default(cuid())
   token           String    @unique
   tenantId        String
   email           String?
@@ -229,14 +242,15 @@ model student_invitations {
   usedByStudentId String?
   expiresAt       DateTime?
   createdAt       DateTime  @default(now())
-  tenants         tenants   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([token])
+  @@map("student_invitations")
 }
 
-model students {
-  id                  String                @id
+model Student {
+  id                  String                @id @default(cuid())
   tenantId            String
   name                String
   birthDate           DateTime?
@@ -249,46 +263,48 @@ model students {
   isActive            Boolean               @default(true)
   isFormEnabled       Boolean               @default(false)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @updatedAt
   formAccessExpiresAt DateTime?
   cpf                 String?
   accessCode          String?               @unique
   consentAcceptedAt   DateTime?
-  assessments         assessments[]
-  intervention_logs   intervention_logs[]
-  intervention_plans  intervention_plans[]
-  notifications       notifications[]
-  school_indicators   school_indicators[]
-  classrooms          classrooms?           @relation(fields: [classroomId], references: [id])
-  tenants             tenants               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  users               users?
-  intervention_groups intervention_groups[] @relation("InterventionGroupToStudent")
+  assessments         Assessment[]
+  interventionLogs   InterventionLog[]
+  interventionPlans  InterventionPlan[]
+  notifications       Notification[]
+  schoolIndicators   SchoolIndicator[]
+  classroom          Classroom?           @relation(fields: [classroomId], references: [id])
+  tenant             Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userAccount        User?
+  interventionGroups InterventionGroup[] @relation("InterventionGroupToStudent")
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, enrollmentId])
   @@index([classroomId])
   @@index([tenantId, grade])
   @@index([tenantId])
+  @@map("students")
 }
 
-model teacher_classrooms {
-  id          String     @id
+model TeacherClassroom {
+  id          String     @id @default(cuid())
   teacherId   String
   classroomId String
   tenantId    String
   createdAt   DateTime   @default(now())
-  classrooms  classrooms @relation(fields: [classroomId], references: [id], onDelete: Cascade)
-  users       users      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  tenants     tenants    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  teacher     User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([teacherId, classroomId])
   @@index([classroomId])
   @@index([teacherId])
   @@index([tenantId])
+  @@map("teacher_classrooms")
 }
 
-model tenants {
-  id                  String                @id
+model Tenant {
+  id                  String                @id @default(cuid())
   name                String
   slug                String                @unique
   cnpj                String?               @unique
@@ -303,23 +319,25 @@ model tenants {
   isActive            Boolean               @default(true)
   subscriptionStatus  String                @default("active")
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
-  assessments         assessments[]
-  classrooms          classrooms[]
-  form_questions      form_questions[]
-  intervention_groups intervention_groups[]
-  intervention_logs   intervention_logs[]
-  intervention_plans  intervention_plans[]
-  notifications       notifications[]
-  school_indicators   school_indicators[]
-  student_invitations student_invitations[]
-  students            students[]
-  teacher_classrooms  teacher_classrooms[]
-  users               users[]
+  updatedAt           DateTime              @updatedAt
+  assessments         Assessment[]
+  classrooms          Classroom[]
+  formQuestions      FormQuestion[]
+  interventionGroups InterventionGroup[]
+  interventionLogs   InterventionLog[]
+  interventionPlans  InterventionPlan[]
+  notifications       Notification[]
+  schoolIndicators   SchoolIndicator[]
+  studentInvitations StudentInvitation[]
+  students            Student[]
+  teacherClassrooms  TeacherClassroom[]
+  users               User[]
+
+  @@map("tenants")
 }
 
-model users {
-  id                 String               @id
+model User {
+  id                 String               @id @default(cuid())
   tenantId           String
   email              String
   name               String
@@ -327,41 +345,46 @@ model users {
   supabaseUid        String?
   isActive           Boolean              @default(true)
   createdAt          DateTime             @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime             @updatedAt
   studentId          String?              @unique
   cpf                String?
-  assessments        assessments[]
-  audit_logs         audit_logs[]
-  intervention_logs  intervention_logs[]
-  intervention_plans intervention_plans[]
-  notifications      notifications[]
-  teacher_classrooms teacher_classrooms[]
-  students           students?            @relation(fields: [studentId], references: [id])
-  tenants            tenants              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assessments        Assessment[]
+  auditLogs          AuditLog[]
+  interventionLogs  InterventionLog[]
+  interventionPlans InterventionPlan[]
+  notifications      Notification[]
+  teacherClassrooms  TeacherClassroom[]
+  student            Student?            @relation(fields: [studentId], references: [id])
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, email])
   @@unique([tenantId, supabaseUid])
   @@index([supabaseUid])
   @@index([tenantId])
+  @@map("users")
 }
 
-model via_question_items {
+model ViaQuestionItem {
   id          Int    @id @default(autoincrement())
   item_number Int    @unique
   text_pt     String
   strength    String
   virtue      String
   max_score   Int    @default(4)
+
+  @@map("via_question_items")
 }
 
-model via_strength_mapping {
+model ViaStrengthMapping {
   id           Int    @id @default(autoincrement())
   strength_id  Int    @unique
   strength     String
   virtue       String
   item_numbers Int[]
   max_possible Int
+
+  @@map("via_strength_mapping")
 }
 
 enum AssessmentType {

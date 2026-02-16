@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Mic, MicOff, Send, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface QuickEventCardProps {
@@ -21,7 +21,6 @@ export function QuickEventCard({ studentId, onSuccess }: QuickEventCardProps) {
     const [description, setDescription] = useState('');
     const [isListening, setIsListening] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { toast } = useToast();
 
     const startListening = () => {
         if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
@@ -42,16 +41,12 @@ export function QuickEventCard({ studentId, onSuccess }: QuickEventCardProps) {
             recognition.onerror = (event: any) => {
                 console.error(event.error);
                 setIsListening(false);
-                toast({ title: 'Erro no reconhecimento', description: 'Não foi possível capturar o áudio.', variant: "destructive" });
+                toast.error('Erro no reconhecimento: Não foi possível capturar o áudio.');
             }
 
             recognition.start();
         } else {
-            toast({
-                title: 'Recurso indisponível',
-                description: 'Seu navegador não suporta reconhecimento de voz.',
-                variant: 'destructive',
-            });
+            toast.error('Recurso indisponível: Seu navegador não suporta reconhecimento de voz.');
         }
     };
 
@@ -66,10 +61,7 @@ export function QuickEventCard({ studentId, onSuccess }: QuickEventCardProps) {
                 description,
             });
 
-            toast({
-                title: 'Registro Salvo',
-                description: 'O log comportamental foi registrado com sucesso.',
-            });
+            toast.success('Registro Salvo: O log comportamental foi registrado com sucesso.');
 
             // Reset form
             setCategory(null);
@@ -78,11 +70,7 @@ export function QuickEventCard({ studentId, onSuccess }: QuickEventCardProps) {
             if (onSuccess) onSuccess();
 
         } catch (error) {
-            toast({
-                title: 'Erro ao salvar',
-                description: 'Ocorreu um erro ao registrar o evento.',
-                variant: 'destructive',
-            });
+            toast.error('Erro ao salvar: Ocorreu um erro ao registrar o evento.');
         } finally {
             setIsSubmitting(false);
         }

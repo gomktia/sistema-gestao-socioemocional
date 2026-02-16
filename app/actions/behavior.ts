@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { BehaviorCategory, AlertLevel, Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { sendCriticalAlertEmail } from '@/lib/mail';
+import { triggerWebhook } from '@/lib/webhooks';
 
 export type BehaviorLogInput = {
     studentId: string;

@@ -107,7 +107,7 @@ export default function LoginPage() {
                                     <span className="font-black text-2xl tracking-tight">TR</span>
                                 </Link>
                                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Triavium</h1>
-                                <p className="text-sm text-slate-500 mt-2 font-medium">Triavium Educação e Desenvolvimento LTDA</p>
+                                <p className="text-sm text-slate-500 mt-2 font-medium">Educação e Desenvolvimento LTDA</p>
                             </div>
                         )}
 

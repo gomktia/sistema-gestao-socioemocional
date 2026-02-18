@@ -17,7 +17,7 @@ export function MinhaVozWidget({ studentName }: { studentName: string }) {
             return;
         }
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
 
         recognition.lang = 'pt-BR';
@@ -113,8 +113,8 @@ export function MinhaVozWidget({ studentName }: { studentName: string }) {
                                 type="button"
                                 onClick={startListening}
                                 className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isListening
-                                        ? 'bg-rose-500 text-white animate-pulse shadow-rose-500/50 shadow-lg'
-                                        : 'text-slate-400 hover:text-white hover:bg-white/10'
+                                    ? 'bg-rose-500 text-white animate-pulse shadow-rose-500/50 shadow-lg'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/10'
                                     }`}
                                 title="Gravar Áudio (Speech-to-Text)"
                             >

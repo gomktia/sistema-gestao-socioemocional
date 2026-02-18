@@ -25,8 +25,7 @@ export async function sendStudentMessage(content: string) {
             data: {
                 content,
                 riskLevel: risk,
-                fromStudentId: user.studentId,
-                tenantId: user.tenantId,
+                studentId: user.studentId,
             }
         });
 

@@ -73,6 +73,7 @@ export function getNavForRole(role: string, organizationType?: string): NavItem[
             { label: 'Início', href: '/inicio', iconName: 'Home' },
             { label: 'Turmas', href: '/turmas', iconName: 'School' },
             { label: 'Dashboard', href: '/dashboard', iconName: 'LayoutDashboard' },
+            { label: 'Monitoramento', href: '/dashboard/intervencoes', iconName: 'TrendingUp' },
             { label: 'Análise Híbrida', href: '/dashboard-hibrido', iconName: 'Activity' },
             { label: 'Gestão de Impacto', href: '/gestao', iconName: 'Trophy' },
             { label: 'Equipe Pedagógica', href: '/gestao/equipe', iconName: 'Users' },
@@ -88,6 +89,7 @@ export function getNavForRole(role: string, organizationType?: string): NavItem[
         ],
         ADMIN: [
             { label: 'Painel Global', href: '/super-admin', iconName: 'ShieldAlert' },
+            { label: 'Monitoramento', href: '/dashboard/intervencoes', iconName: 'TrendingUp' },
             { label: labels.organizations, href: '/super-admin/escolas', iconName: 'School' },
             { label: 'Financeiro', href: '/super-admin/financeiro', iconName: 'CreditCard' },
             { label: 'Suporte', href: '/super-admin/suporte', iconName: 'LifeBuoy' },

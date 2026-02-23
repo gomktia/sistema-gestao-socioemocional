@@ -115,6 +115,12 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.ASSESSMENT_APPLY_VIA,            // Pode responder o questionário
     // NÃO vê: riscos, intervenções, dados de outros alunos
   ],
+
+  [UserRole.RESPONSIBLE]: [
+    // Responsáveis veem APENAS as forças dos filhos vinculados
+    Permission.ASSESSMENT_VIEW_OWN_STRENGTHS,
+    // NÃO vê: riscos, intervenções, dados clínicos, outros alunos
+  ],
 };
 
 /** Verifica se um papel possui determinada permissão */
@@ -141,6 +147,14 @@ export function filterProfileByRole(
 
   if (viewerRole === UserRole.STUDENT) {
     // Aluno: APENAS suas forças de assinatura e todas as forças
+    return {
+      allStrengths: safe.allStrengths,
+      signatureStrengths: safe.signatureStrengths,
+    };
+  }
+
+  if (viewerRole === UserRole.RESPONSIBLE) {
+    // Responsável: mesma visão do aluno — APENAS forças
     return {
       allStrengths: safe.allStrengths,
       signatureStrengths: safe.signatureStrengths,

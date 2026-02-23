@@ -82,6 +82,10 @@ export function getNavForRole(role: string, organizationType?: string): NavItem[
             { label: 'Sugestoes', href: '/sugestoes', iconName: 'Lightbulb' },
             { label: 'Configurações', href: '/configuracoes', iconName: 'Settings' },
         ],
+        RESPONSIBLE: [
+            { label: 'Início', href: '/responsavel', iconName: 'Home' },
+            { label: 'Perfil', href: '/responsavel/perfil', iconName: 'User' },
+        ],
         ADMIN: [
             { label: 'Painel Global', href: '/super-admin', iconName: 'ShieldAlert' },
             { label: labels.organizations, href: '/super-admin/escolas', iconName: 'School' },

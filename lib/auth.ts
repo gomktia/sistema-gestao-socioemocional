@@ -115,6 +115,7 @@ export async function getCurrentUser(): Promise<AppUser | null> {
  */
 const ROLE_HOME: Record<string, string> = {
     STUDENT: '/minhas-forcas',
+    RESPONSIBLE: '/responsavel',
     TEACHER: '/inicio',
     PSYCHOLOGIST: '/inicio',
     COUNSELOR: '/inicio',
@@ -148,8 +149,9 @@ const ROUTE_ACCESS: Record<string, string[]> = {
     '/escola/configuracoes': ['MANAGER', 'ADMIN'],
     '/sugestoes': ['TEACHER', 'MANAGER'],
     '/super-admin': ['ADMIN'],
-    '/inicio': ['TEACHER', 'MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR', 'STUDENT'],
-    '/configuracoes': ['TEACHER', 'MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR', 'STUDENT'],
+    '/responsavel': ['RESPONSIBLE'],
+    '/inicio': ['TEACHER', 'MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR', 'STUDENT', 'RESPONSIBLE'],
+    '/configuracoes': ['TEACHER', 'MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR', 'STUDENT', 'RESPONSIBLE'],
 };
 
 /**

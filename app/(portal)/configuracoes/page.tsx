@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { UserCircle, Shield, Key, Bell, HelpCircle, FileText, ChevronRight, Settings } from 'lucide-react';
 import { getQuestions } from '@/app/actions/form-questions';
 import { getLabels } from '@/src/lib/utils/labels';
+import { RestartTourButton } from '@/components/onboarding/RestartTourButton';
 
 export default async function SettingsPage() {
     const user = await getCurrentUser();
@@ -83,10 +84,11 @@ export default async function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="pt-6 border-t border-slate-50">
+                                    <div className="pt-6 border-t border-slate-50 flex items-center gap-4">
                                         <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12 px-8 font-bold shadow-lg shadow-indigo-200">
                                             Salvar Alterações
                                         </Button>
+                                        <RestartTourButton />
                                     </div>
                                 </CardContent>
                             </Card>

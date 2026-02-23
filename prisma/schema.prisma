@@ -444,6 +444,7 @@ model User {
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   guardianStudents   StudentGuardian[]
   guardianInvites    GuardianInvite[]    @relation("GuardianInviter")
+  tourCompletedAt    DateTime?
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, email])

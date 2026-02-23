@@ -109,7 +109,9 @@ export default async function InicioPage() {
             {/* Student Experience: Minha Voz & Big Five */}
             {isStudent ? (
                 <>
-                    <MinhaVozWidget studentName={user.name} />
+                    <div data-tour="minha-voz">
+                        <MinhaVozWidget studentName={user.name} />
+                    </div>
 
                     <section className="space-y-4">
                         <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Seu Perfil Sócioemocional</h2>
@@ -118,7 +120,7 @@ export default async function InicioPage() {
                 </>
             ) : (
                 /* Staff Experience: Standard Dashboard Header */
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1120] to-[#1e293b] p-6 sm:px-8 sm:py-6 text-white shadow-[0_20px_60px_rgba(15,23,42,0.2)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 min-h-[120px] max-h-auto sm:max-h-[140px]">
+                <div data-tour="welcome-banner" className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1120] to-[#1e293b] p-6 sm:px-8 sm:py-6 text-white shadow-[0_20px_60px_rgba(15,23,42,0.2)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 min-h-[120px] max-h-auto sm:max-h-[140px]">
                     <div className="relative z-10 max-w-xl">
                         <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">
                             Painel de Inteligência
@@ -132,7 +134,7 @@ export default async function InicioPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-3 relative z-10">
-                        <Link href="/turma/triagem">
+                        <Link href="/turma/triagem" data-tour="quick-screening">
                             <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-2xl font-extrabold text-[11px] transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-indigo-900/40 uppercase tracking-wider border border-indigo-500/50">
                                 <ClipboardList size={14} strokeWidth={2} />
                                 Nova Triagem
@@ -147,7 +149,7 @@ export default async function InicioPage() {
             )}
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div data-tour="stats-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                 {isStudent ? (
                     <>
                         {/* Aluno: Minha Jornada */}
@@ -275,7 +277,7 @@ export default async function InicioPage() {
 
             {/* Ações Rápidas Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <section className="space-y-5">
+                <section data-tour="quick-nav" className="space-y-5">
                     <h3 className="text-sm font-extrabold text-slate-400 uppercase tracking-widest">Navegação Rápida</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <Link href={isStudent ? "/questionario" : "/turma"} className="group">
@@ -320,7 +322,7 @@ export default async function InicioPage() {
                     </div>
                 </section>
 
-                <section className="space-y-5">
+                <section data-tour="impact-panel" className="space-y-5">
                     <h3 className="text-sm font-extrabold text-slate-400 uppercase tracking-widest">
                         {isStudent ? 'Meu Plano de Ação' : 'Painel de Impacto'}
                     </h3>

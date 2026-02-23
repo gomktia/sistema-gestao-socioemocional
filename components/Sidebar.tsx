@@ -121,7 +121,7 @@ export function Sidebar({ items, userName, userEmail, userRole, organizationType
     };
 
     const NavList = () => (
-        <nav role="navigation" aria-label="Menu principal" className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+        <nav data-tour="sidebar-nav" role="navigation" aria-label="Menu principal" className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
             {items.map((item) => {
                 const Icon = ICON_MAP[item.iconName] || Home;
                 const hasChildren = item.children && item.children.length > 0;

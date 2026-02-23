@@ -142,3 +142,43 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* driver.js tour customization */
+.triavium-tour-popover {
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15) !important;
+}
+
+.triavium-tour-popover .driver-popover-title {
+  font-weight: 900 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: -0.01em;
+  font-family: var(--font-sans);
+}
+
+.triavium-tour-popover .driver-popover-description {
+  font-size: 0.8rem !important;
+  color: #64748b !important;
+  line-height: 1.6;
+  font-family: var(--font-sans);
+}
+
+.triavium-tour-popover .driver-popover-next-btn,
+.triavium-tour-popover .driver-popover-prev-btn,
+.triavium-tour-popover .driver-popover-close-btn {
+  border-radius: 0.75rem !important;
+  font-weight: 700 !important;
+  font-size: 0.7rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.triavium-tour-popover .driver-popover-next-btn {
+  background-color: #4f46e5 !important;
+}
+
+.triavium-tour-popover .driver-popover-progress-text {
+  font-size: 0.65rem !important;
+  font-weight: 800;
+  color: #94a3b8;
+}

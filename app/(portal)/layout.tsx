@@ -5,8 +5,11 @@ import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { getNavForRole } from '@/components/sidebar-nav';
 import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck';
+import { TourGuide } from '@/components/onboarding/TourGuide';
+import { GlossaryButton } from '@/components/onboarding/GlossaryButton';
 import { getLabels } from '@/src/lib/utils/labels';
 import { UserRole } from '@/src/core/types';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +36,12 @@ export default async function PortalLayout({
     const labels = getLabels(user.organizationType);
     const isManager = user.role === UserRole.MANAGER || user.role === UserRole.ADMIN;
     const showWizard = isManager && tenant ? !tenant.onboardingCompleted : false;
+
+    const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { tourCompletedAt: true },
+    });
+    const showTour = !dbUser?.tourCompletedAt && user.role !== UserRole.RESPONSIBLE && !showWizard;
 
     // Multi-tenancy: Buscar todos os vínculos
     const { getMyTenants } = await import('@/app/actions/tenant-selector');
@@ -67,6 +76,8 @@ export default async function PortalLayout({
                 tenantName={tenant?.name ?? ''}
                 labels={labels}
             />
+            <TourGuide userRole={user.role} showTour={showTour} />
+            <GlossaryButton />
         </div>
     );
 }

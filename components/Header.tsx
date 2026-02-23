@@ -33,7 +33,9 @@ export function Header({ userName, userRole, organizationType, userId }: HeaderP
 
             <div className="flex items-center gap-3">
                 {(userRole === 'MANAGER' || userRole === 'PSYCHOLOGIST' || userRole === 'ADMIN') && (
-                    <NotificationBell userId={userId} />
+                    <span data-tour="notification-bell">
+                        <NotificationBell userId={userId} />
+                    </span>
                 )}
 
                 <div className="h-8 w-[1px] bg-slate-100 mx-1 hidden sm:block" />

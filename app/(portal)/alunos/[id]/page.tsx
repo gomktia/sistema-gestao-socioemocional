@@ -11,6 +11,9 @@ import Link from 'next/link';
 import { ChevronLeft, UserCircle } from 'lucide-react';
 import { getLabels } from '@/src/lib/utils/labels';
 import { DataPortabilityCard } from '@/components/legal/DataPortabilityCard';
+import { FamilyReportDialog } from '@/components/reports/FamilyReportDialog';
+import { generateEvolutionNarrative, getHomeSuggestions } from '@/lib/report/family-report-helpers';
+import { STRENGTH_DESCRIPTIONS } from '@/src/core/content/strength-descriptions';
 
 export default async function AlunoDetalhePage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -122,23 +125,60 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
             student.grade === 'ANO_2_EM' ? (labels.organization === 'Escola' ? '2ª Série EM' : 'Nível 2') :
                 (labels.organization === 'Escola' ? '3ª Série EM' : 'Nível 3');
 
+    // Preparar dados para Relatório da Família
+    const canGenerateFamilyReport = profile && (user.role === UserRole.PSYCHOLOGIST || user.role === UserRole.COUNSELOR);
+
+    let familyReportProps = null;
+    if (profile && canGenerateFamilyReport) {
+        const strengthsForReport = profile.signatureStrengths.map((s) => {
+            const desc = STRENGTH_DESCRIPTIONS[s.strength];
+            return {
+                label: s.label,
+                virtue: s.virtue,
+                description: desc?.description || '',
+                tip: desc?.tip || '',
+            };
+        });
+
+        const evolutionNarrative = generateEvolutionNarrative(evolutionData);
+        const homeSuggestions = getHomeSuggestions(
+            profile.signatureStrengths.map((s) => ({ strength: s.strength, label: s.label }))
+        );
+
+        familyReportProps = {
+            studentName: student.name,
+            grade: displayGrade,
+            signatureStrengths: strengthsForReport,
+            evolutionNarrative,
+            homeSuggestions,
+            schoolName: student.tenant.name,
+            professionalName: user.name || '',
+            professionalRole: user.role === UserRole.PSYCHOLOGIST ? 'Psicólogo(a)' : 'Orientador(a) Educacional',
+        };
+    }
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Link href="/alunos">
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <ChevronLeft size={20} />
-                    </Button>
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                        <UserCircle size={24} className="text-slate-400" />
-                        {student.name}
-                    </h1>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                        {displayGrade}
-                    </p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Link href="/alunos">
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <ChevronLeft size={20} />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            <UserCircle size={24} className="text-slate-400" />
+                            {student.name}
+                        </h1>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            {displayGrade}
+                        </p>
+                    </div>
                 </div>
+                {familyReportProps && (
+                    <FamilyReportDialog {...familyReportProps} />
+                )}
             </div>
 
             {/* Painel de Gestão (Visível apenas para Psicólogo/Admin) */}

@@ -1,5 +1,4 @@
-// NOTE: This file contains both pure functions (testable) and server actions.
-// Pure functions are exported normally. Server actions use 'use server' inline.
+'use server';
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -52,8 +51,6 @@ export function validateGuardianInviteInput(input: InviteInput): ValidationResul
 const INVITE_EXPIRY_DAYS = 7;
 
 export async function sendGuardianInvite(input: InviteInput) {
-  'use server';
-
   const user = await getCurrentUser();
   const allowedRoles = [UserRole.PSYCHOLOGIST, UserRole.COUNSELOR, UserRole.MANAGER, UserRole.ADMIN];
 
@@ -178,8 +175,6 @@ export async function sendGuardianInvite(input: InviteInput) {
 // ============================================================
 
 export async function validateGuardianToken(token: string) {
-  'use server';
-
   if (!token) return { valid: false, error: 'Token não informado.' };
 
   const invite = await prisma.guardianInvite.findUnique({
@@ -215,8 +210,6 @@ export async function validateGuardianToken(token: string) {
 // ============================================================
 
 export async function registerGuardian(formData: FormData) {
-  'use server';
-
   const token = formData.get('token') as string;
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;

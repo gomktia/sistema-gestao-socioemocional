@@ -45,6 +45,8 @@ export default async function IntervencoesPage() {
         getStudentsForSelection(),
     ]);
 
+    type GroupEntry = (typeof groups)[number];
+
     return (
         <div className="space-y-10 animate-in fade-in duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -59,7 +61,7 @@ export default async function IntervencoesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups.map((group) => (
+                {groups.map((group: GroupEntry) => (
                     <Card key={group.id} className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-2xl hover:ring-1 hover:ring-indigo-500/10 transition-all duration-300 hover:-translate-y-2 group overflow-hidden">
                         <CardHeader className="bg-slate-50/30 pb-4">
                             <div className="flex items-center justify-between mb-2">

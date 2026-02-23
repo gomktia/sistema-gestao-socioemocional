@@ -52,14 +52,15 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
         orderBy: { appliedAt: 'asc' },
     });
 
-    const viaAnswers = allAssessments.find(a => a.type === 'VIA_STRENGTHS')?.rawAnswers;
-    const srssAnswers = allAssessments.find(a => a.type === 'SRSS_IE')?.rawAnswers;
-    const bigFiveScores = allAssessments.find(a => a.type === 'BIG_FIVE')?.processedScores as any;
+    type AssessmentRow = (typeof allAssessments)[number];
+    const viaAnswers = allAssessments.find((a: AssessmentRow) => a.type === 'VIA_STRENGTHS')?.rawAnswers;
+    const srssAnswers = allAssessments.find((a: AssessmentRow) => a.type === 'SRSS_IE')?.rawAnswers;
+    const bigFiveScores = allAssessments.find((a: AssessmentRow) => a.type === 'BIG_FIVE')?.processedScores as any;
 
     // Dados para o Gráfico de Evolução
     const evolutionData = allAssessments
-        .filter(a => a.type === 'SRSS_IE')
-        .map(a => ({
+        .filter((a: AssessmentRow) => a.type === 'SRSS_IE')
+        .map((a: AssessmentRow) => ({
             window: a.screeningWindow === 'DIAGNOSTIC' ? 'Março' : a.screeningWindow === 'MONITORING' ? 'Junho' : 'Outubro',
             externalizing: (a.processedScores as any)?.externalizing?.score || 0,
             internalizing: (a.processedScores as any)?.internalizing?.score || 0,
@@ -150,12 +151,12 @@ export default async function AlunoDetalhePage(props: { params: Promise<{ id: st
 
             {/* Gráficos de Monitoramento */}
             <StudentCharts
-                evolutionData={evolutionData.map(d => ({
+                evolutionData={evolutionData.map((d: { window: string; externalizing: number; internalizing: number }) => ({
                     window: d.window,
                     externalizing: d.externalizing as number,
                     internalizing: d.internalizing as number
                 }))}
-                viaScores={profile?.allStrengths || allAssessments.find(a => a.type === 'VIA_STRENGTHS')?.processedScores}
+                viaScores={profile?.allStrengths || allAssessments.find((a: AssessmentRow) => a.type === 'VIA_STRENGTHS')?.processedScores}
             />
 
             {!profile ? (

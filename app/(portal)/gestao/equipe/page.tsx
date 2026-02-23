@@ -47,7 +47,8 @@ export default async function EquipePage() {
         select: { id: true, name: true, grade: true }
     });
 
-    const teacherIds = teamMembers.filter(m => m.role === 'TEACHER').map(m => m.id);
+    type TeamMember = (typeof teamMembers)[number];
+    const teacherIds = teamMembers.filter((m: TeamMember) => m.role === 'TEACHER').map((m: TeamMember) => m.id);
     const teacherClassroomLinks = await prisma.teacherClassroom.findMany({
         where: {
             teacherId: { in: teacherIds },
@@ -57,8 +58,9 @@ export default async function EquipePage() {
     });
 
     // Criar mapa de teacherId -> classroomIds
+    type TeacherClassroomLink = (typeof teacherClassroomLinks)[number];
     const teacherClassroomMap = new Map<string, string[]>();
-    teacherClassroomLinks.forEach(link => {
+    teacherClassroomLinks.forEach((link: TeacherClassroomLink) => {
         const existing = teacherClassroomMap.get(link.teacherId) || [];
         teacherClassroomMap.set(link.teacherId, [...existing, link.classroomId]);
     });
@@ -111,7 +113,7 @@ export default async function EquipePage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {teamMembers.map((member) => (
+                            {teamMembers.map((member: TeamMember) => (
                                 <tr key={member.id} className="group hover:bg-slate-50/50 transition-colors">
                                     <td className="p-4 pl-6">
                                         <div className="flex items-center gap-3">

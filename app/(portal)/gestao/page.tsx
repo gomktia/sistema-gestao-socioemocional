@@ -36,6 +36,8 @@ export default async function GestaoPage() {
         select: { screeningWindow: true, overallTier: true },
     });
 
+    type AssessmentEntry = (typeof assessments)[number];
+
     const windows = ['DIAGNOSTIC', 'MONITORING', 'FINAL'];
     const windowLabels: Record<string, string> = {
         'DIAGNOSTIC': 'Início (Diagnóstico)',
@@ -44,12 +46,12 @@ export default async function GestaoPage() {
     };
 
     const comparisonData = windows.map(w => {
-        const windowAss = assessments.filter(a => a.screeningWindow === w);
+        const windowAss = assessments.filter((a: AssessmentEntry) => a.screeningWindow === w);
         return {
             window: windowLabels[w],
-            tier1: windowAss.filter(a => a.overallTier === 'TIER_1').length,
-            tier2: windowAss.filter(a => a.overallTier === 'TIER_2').length,
-            tier3: windowAss.filter(a => a.overallTier === 'TIER_3').length,
+            tier1: windowAss.filter((a: AssessmentEntry) => a.overallTier === 'TIER_1').length,
+            tier2: windowAss.filter((a: AssessmentEntry) => a.overallTier === 'TIER_2').length,
+            tier3: windowAss.filter((a: AssessmentEntry) => a.overallTier === 'TIER_3').length,
         };
     }).filter(wd => wd.tier1 + wd.tier2 + wd.tier3 > 0);
 

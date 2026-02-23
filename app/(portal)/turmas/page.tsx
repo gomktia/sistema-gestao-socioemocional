@@ -11,6 +11,7 @@ export default async function TurmasPage() {
     if (!user) return null;
 
     const classrooms = await getClassrooms();
+    type ClassroomEntry = (typeof classrooms)[number];
     const labels = getLabels(user.organizationType);
 
     return (
@@ -28,7 +29,7 @@ export default async function TurmasPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classrooms.length > 0 ? (
-                    classrooms.map((cls) => (
+                    classrooms.map((cls: ClassroomEntry) => (
                         <Card key={cls.id} className="group overflow-hidden rounded-3xl border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-2xl hover:ring-1 hover:ring-indigo-500/10 transition-all duration-500 bg-white">
                             <CardContent className="p-0">
                                 <div className="p-8">

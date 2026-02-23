@@ -44,7 +44,8 @@ export default async function TriagemPage() {
             studentFilter.classroomId = 'none';
         } else {
             // Filtrar apenas alunos das turmas vinculadas
-            const classroomIds = myClassrooms.map(c => c.id);
+            type ClassroomEntry = (typeof myClassrooms)[number];
+            const classroomIds = myClassrooms.map((c: ClassroomEntry) => c.id);
             studentFilter.classroomId = { in: classroomIds };
         }
     }
@@ -64,8 +65,11 @@ export default async function TriagemPage() {
         select: { studentId: true, rawAnswers: true, overallTier: true },
     });
 
+    type AssessmentEntry = (typeof assessments)[number];
+    type StudentEntry = (typeof students)[number];
+
     const existingData: Record<string, any> = {};
-    assessments.forEach(a => {
+    assessments.forEach((a: AssessmentEntry) => {
         existingData[a.studentId] = {
             answers: a.rawAnswers,
             tier: a.overallTier
@@ -75,9 +79,11 @@ export default async function TriagemPage() {
     const labels = getLabels(user.organizationType);
 
     // SECURITY: Segmented Assessment Logic
-    // We determine the level based on the students being listed. 
+    // We determine the level based on the students being listed.
     // In a future update, this will be filtered by Class selection.
-    const hasMedio = students.some(s => s.grade.includes('EM'))
+    const hasMedio = students.some((s: StudentEntry) => s.grade.includes('EM'))
+
+    type QuestionEntry = Awaited<ReturnType<typeof prisma.formQuestion.findMany>>[number];
 
     // Buscar perguntas para Tooltips e Modal de acordo com o nível
     const srssQuestions = await prisma.formQuestion.findMany({
@@ -120,7 +126,7 @@ export default async function TriagemPage() {
 
                                     <ScrollArea className="h-[calc(100vh-200px)] pr-4">
                                         <div className="space-y-6">
-                                            {srssQuestions.map((q) => (
+                                            {srssQuestions.map((q: QuestionEntry) => (
                                                 <div key={q.id} className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all duration-300">
                                                     <div className="flex items-start gap-4">
                                                         <div className="h-8 w-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xs font-black text-indigo-600 shrink-0 shadow-sm group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-colors">

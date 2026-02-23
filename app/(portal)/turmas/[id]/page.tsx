@@ -31,6 +31,8 @@ export default async function ClassroomDetailPage(props: { params: Promise<{ id:
         notFound();
     }
 
+    type StudentInClassroom = (typeof classroom.students)[number];
+
     const labels = getLabels(user.organizationType);
 
     // Buscar alunos sem turma para poder adicionar
@@ -95,7 +97,7 @@ export default async function ClassroomDetailPage(props: { params: Promise<{ id:
 
                 {classroom.students.length > 0 ? (
                     <div className="divide-y divide-slate-50">
-                        {classroom.students.map((student) => (
+                        {classroom.students.map((student: StudentInClassroom) => (
                             <div key={student.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-bold">

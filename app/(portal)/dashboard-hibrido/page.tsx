@@ -36,10 +36,13 @@ export default async function HybridDashboardPage() {
         }
     });
 
+    type StudentEntry = (typeof students)[number];
+    type AssessmentEntry = StudentEntry['assessments'][number];
+
     // Process data for Big Five / SRSS analysis
-    const analysisData = students.map(student => {
-        const bigFive = student.assessments.find(a => a.type === 'BIG_FIVE')?.processedScores as any;
-        const srss = student.assessments.find(a => a.type === 'SRSS_IE')?.processedScores as any;
+    const analysisData = students.map((student: StudentEntry) => {
+        const bigFive = student.assessments.find((a: AssessmentEntry) => a.type === 'BIG_FIVE')?.processedScores as any;
+        const srss = student.assessments.find((a: AssessmentEntry) => a.type === 'SRSS_IE')?.processedScores as any;
 
         if (!bigFive || !srss) return null;
 
@@ -67,8 +70,8 @@ export default async function HybridDashboardPage() {
     }).filter(Boolean);
 
     // Process data for IEAA analysis
-    const ieaaData = students.map(student => {
-        const ieaa = student.assessments.find(a => a.type === 'IEAA')?.processedScores as IEAAResult | undefined;
+    const ieaaData = students.map((student: StudentEntry) => {
+        const ieaa = student.assessments.find((a: AssessmentEntry) => a.type === 'IEAA')?.processedScores as IEAAResult | undefined;
         if (!ieaa) return null;
 
         return {

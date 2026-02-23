@@ -58,6 +58,8 @@ export default async function MinhasForcasPage() {
         orderBy: { createdAt: 'desc' },
     });
 
+    type PlanEntry = (typeof developmentPlan)[number];
+
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -99,7 +101,7 @@ export default async function MinhasForcasPage() {
 
                 {developmentPlan.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4">
-                        {developmentPlan.map((plan) => (
+                        {developmentPlan.map((plan: PlanEntry) => (
                             <Card key={plan.id} className="border-none shadow-xl shadow-slate-100 border-l-4 border-violet-500 overflow-hidden">
                                 <CardContent className="p-6">
                                     <div className="space-y-4">

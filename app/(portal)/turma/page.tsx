@@ -37,7 +37,7 @@ export default async function TurmaPage(props: { searchParams: Promise<{ classro
 
         if (classroomId) {
             // Validar se professor tem acesso à turma selecionada
-            const hasAccess = classrooms.some(c => c.id === classroomId);
+            const hasAccess = classrooms.some((c: { id: string; name: string; _count?: { students: number } }) => c.id === classroomId);
             if (!hasAccess) {
                 redirect('/turma'); // Redirecionar se tentar acessar turma não vinculada
             }
@@ -90,7 +90,8 @@ export default async function TurmaPage(props: { searchParams: Promise<{ classro
         select: { studentId: true, overallTier: true, rawAnswers: true },
     });
 
-    const assessmentMap = new Map(assessments.map(a => [a.studentId, a]));
+    type AssessmentEntry = (typeof assessments)[number];
+    const assessmentMap = new Map<string, AssessmentEntry>(assessments.map((a: AssessmentEntry) => [a.studentId, a]));
 
     const { generateGradeAlerts } = await import('@/src/core/logic/scoring');
     const { GradeLevel: CoreGradeLevel } = await import('@/src/core/types');
@@ -101,7 +102,7 @@ export default async function TurmaPage(props: { searchParams: Promise<{ classro
         'ANO_3_EM': CoreGradeLevel.TERCEIRO_ANO,
     };
 
-    const studentsWithRisk = students.map(s => {
+    const studentsWithRisk = students.map((s: { id: string; name: string; grade: string }) => {
         const a = assessmentMap.get(s.id);
         const coreGrade = gradeMap[s.grade] || CoreGradeLevel.PRIMEIRO_ANO;
 

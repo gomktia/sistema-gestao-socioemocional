@@ -40,10 +40,12 @@ export default async function AlunosPage() {
         select: { studentId: true, overallTier: true },
     });
 
-    const tierMap = new Map(assessments.map(a => [a.studentId, a.overallTier]));
+    type AssessmentEntry = (typeof assessments)[number];
+    type StudentEntry = (typeof students)[number];
+    const tierMap = new Map(assessments.map((a: AssessmentEntry) => [a.studentId, a.overallTier]));
 
     // Preparar dados para exportacao
-    const studentsForExport = students.map(student => ({
+    const studentsForExport = students.map((student: StudentEntry) => ({
         id: student.id,
         name: student.name,
         grade: student.grade,
@@ -69,8 +71,8 @@ export default async function AlunosPage() {
 
             {students.length > 0 ? (
                 <div className="grid gap-3">
-                    {students.map((student) => {
-                        const tier = assessments.find(a => a.studentId === student.id)?.overallTier;
+                    {students.map((student: StudentEntry) => {
+                        const tier = assessments.find((a: AssessmentEntry) => a.studentId === student.id)?.overallTier;
                         const displayGrade =
                             student.grade === 'ANO_1_EM' ? (labels.organization === 'Escola' ? '1ª Série EM' : 'Nível 1') :
                                 student.grade === 'ANO_2_EM' ? (labels.organization === 'Escola' ? '2ª Série EM' : 'Nível 2') :

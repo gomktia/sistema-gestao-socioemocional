@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { UserSearch, ChevronRight } from 'lucide-react';
 import { getLabels } from '@/src/lib/utils/labels';
 import { ExportStudentsPDF } from '@/components/reports/ExportStudentsPDF';
+import { ImportStudentsDialog } from '@/components/import/ImportStudentsDialog';
 
 export const metadata = {
     title: 'Gestão de Membros',
@@ -56,9 +57,14 @@ export default async function AlunosPage() {
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestão de {labels.subjects}</h1>
                     <p className="text-slate-500 mt-1.5 text-sm">Monitore o risco socioemocional e planeje intervenções.</p>
                 </div>
-                {students.length > 0 && (
-                    <ExportStudentsPDF students={studentsForExport} />
-                )}
+                <div className="flex items-center gap-2">
+                    {(user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) && (
+                        <ImportStudentsDialog />
+                    )}
+                    {students.length > 0 && (
+                        <ExportStudentsPDF students={studentsForExport} />
+                    )}
+                </div>
             </div>
 
             {students.length > 0 ? (
@@ -111,6 +117,11 @@ export default async function AlunosPage() {
                     <p className="text-slate-500 max-w-sm mx-auto mt-2 mb-8 text-sm">
                         Parece que ainda não há {labels.subjects.toLowerCase()} cadastrados nesta unidade.
                     </p>
+                    {(user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) && (
+                        <div className="mb-4">
+                            <ImportStudentsDialog />
+                        </div>
+                    )}
                     <Link href="/turma">
                         <Button variant="outline" className="border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600 rounded-2xl active:scale-95 transition-all">
                             Gerenciar Importações

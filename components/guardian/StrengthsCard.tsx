@@ -19,7 +19,7 @@ export function StrengthsCard({ strengths }: StrengthsCardProps) {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Star size={20} className="text-amber-500" />
-          Forcas de Carater
+          Forças de Caráter
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

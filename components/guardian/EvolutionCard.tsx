@@ -13,7 +13,7 @@ export function EvolutionCard({ narrative }: EvolutionCardProps) {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <TrendingUp size={20} className="text-emerald-600" />
-          Evolucao
+          Evolução
         </CardTitle>
       </CardHeader>
       <CardContent>

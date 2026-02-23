@@ -21,7 +21,7 @@ export default async function ResponsavelPage() {
 
   // Fetch all children linked to this guardian via StudentGuardian
   const guardianLinks = await prisma.studentGuardian.findMany({
-    where: { guardianId: user.id },
+    where: { guardianId: user.id, tenantId: user.tenantId },
     include: {
       student: {
         select: {
@@ -47,7 +47,7 @@ export default async function ResponsavelPage() {
         <div>
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
             <Heart size={24} className="text-rose-500" />
-            Portal do Responsavel
+            Portal do Responsável
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Acompanhe o desenvolvimento socioemocional do(a) seu(sua) filho(a)
@@ -56,8 +56,8 @@ export default async function ResponsavelPage() {
         <div className="bg-slate-50 rounded-2xl p-12 text-center border-2 border-dashed border-slate-200">
           <h3 className="text-slate-500 font-bold mb-2">Nenhum aluno vinculado</h3>
           <p className="text-slate-400 text-sm max-w-sm mx-auto">
-            Voce ainda nao possui nenhum(a) filho(a) vinculado(a) ao seu perfil.
-            Entre em contato com a escola para solicitar o vinculo.
+            Você ainda não possui nenhum(a) filho(a) vinculado(a) ao seu perfil.
+            Entre em contato com a escola para solicitar o vínculo.
           </p>
         </div>
       </div>
@@ -69,12 +69,12 @@ export default async function ResponsavelPage() {
   const student = firstLink.student;
 
   const gradeDisplay =
-    student.grade === 'ANO_1_EM' ? '1a Serie EM' :
-    student.grade === 'ANO_2_EM' ? '2a Serie EM' : '3a Serie EM';
+    student.grade === 'ANO_1_EM' ? '1ª Série EM' :
+    student.grade === 'ANO_2_EM' ? '2ª Série EM' : '3ª Série EM';
 
   // Fetch assessments for this child
   const allAssessments = await prisma.assessment.findMany({
-    where: { studentId: student.id },
+    where: { tenantId: user.tenantId, studentId: student.id },
     select: {
       type: true,
       rawAnswers: true,
@@ -151,7 +151,7 @@ export default async function ResponsavelPage() {
       targetId: student.id,
       details: { childName: student.name },
     },
-  }).catch(() => {});
+  }).catch((err) => console.error('Audit log failed:', err));
 
   return (
     <div className="space-y-6">
@@ -159,7 +159,7 @@ export default async function ResponsavelPage() {
       <div>
         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
           <Heart size={24} className="text-rose-500" />
-          Portal do Responsavel
+          Portal do Responsável
         </h1>
         <p className="text-sm text-slate-500 mt-1">
           Acompanhe o desenvolvimento socioemocional do(a) seu(sua) filho(a)
@@ -169,7 +169,7 @@ export default async function ResponsavelPage() {
       {/* Multi-child note */}
       {guardianLinks.length > 1 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
-          Voce possui {guardianLinks.length} filho(a)(s) vinculado(s). Em breve sera possivel alternar entre eles.
+          Você possui {guardianLinks.length} filho(a)(s) vinculado(s). Em breve será possível alternar entre eles.
         </div>
       )}
 
@@ -184,11 +184,11 @@ export default async function ResponsavelPage() {
       {/* Main content */}
       {!profile ? (
         <div className="bg-slate-50 rounded-2xl p-12 text-center border-2 border-dashed border-slate-200">
-          <h3 className="text-slate-500 font-bold mb-2">Avaliacoes em Andamento</h3>
+          <h3 className="text-slate-500 font-bold mb-2">Avaliações em Andamento</h3>
           <p className="text-slate-400 text-sm max-w-sm mx-auto">
-            As avaliacoes do(a) {student.name} ainda estao sendo realizadas.
-            Assim que forem concluidas, voce podera visualizar as forcas de carater,
-            evolucao e sugestoes de atividades para casa.
+            As avaliações do(a) {student.name} ainda estão sendo realizadas.
+            Assim que forem concluídas, você poderá visualizar as forças de caráter,
+            evolução e sugestões de atividades para casa.
           </p>
         </div>
       ) : (

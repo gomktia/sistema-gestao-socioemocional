@@ -126,6 +126,7 @@ export async function sendGuardianInvite(input: InviteInput) {
       studentId,
       email,
       token,
+      relationship: relationship as any,
       invitedBy: user.id,
       expiresAt,
     },
@@ -220,6 +221,7 @@ export async function registerGuardian(formData: FormData) {
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
 
   if (!token || !name || !email || !password) {
     return { success: false, error: 'Todos os campos são obrigatórios.' };
@@ -229,12 +231,22 @@ export async function registerGuardian(formData: FormData) {
     return { success: false, error: 'A senha deve ter no mínimo 6 caracteres.' };
   }
 
+  if (password !== confirmPassword) {
+    return { success: false, error: 'As senhas não coincidem.' };
+  }
+
   const validation = await validateGuardianToken(token);
   if (!validation.valid || !validation.data) {
     return { success: false, error: validation.error };
   }
 
   const { inviteId, studentId, tenantId } = validation.data;
+
+  // Fetch invite to get relationship
+  const invite = await prisma.guardianInvite.findUnique({
+    where: { id: inviteId },
+    select: { relationship: true },
+  });
 
   // Create Supabase auth user
   const { createClient } = await import('@/lib/supabase/server');
@@ -271,7 +283,7 @@ export async function registerGuardian(formData: FormData) {
       tenantId,
       studentId,
       guardianId: newUser.id,
-      relationship: 'OUTRO',
+      relationship: invite?.relationship || 'OUTRO',
     },
   });
 
@@ -310,18 +322,18 @@ function getGuardianInviteEmailHtml(studentName: string, inviteLink: string, ten
       <table width="600" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#059669 0%,#10b981 100%);border-radius:16px 16px 0 0;">
         <tr><td style="padding:40px;text-align:center;">
           <h1 style="color:#fff;margin:0;font-size:28px;font-weight:800;">${tenantName}</h1>
-          <p style="color:rgba(255,255,255,0.9);margin:8px 0 0;font-size:14px;">Portal da Familia</p>
+          <p style="color:rgba(255,255,255,0.9);margin:8px 0 0;font-size:14px;">Portal da Família</p>
         </td></tr>
       </table>
       <table width="600" cellpadding="0" cellspacing="0" style="background-color:#fff;border-radius:0 0 16px 16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <tr><td style="padding:48px 40px;">
-          <h2 style="color:#1e293b;margin:0 0 8px;font-size:24px;font-weight:700;">Ola!</h2>
+          <h2 style="color:#1e293b;margin:0 0 8px;font-size:24px;font-weight:700;">Olá!</h2>
           <p style="color:#64748b;margin:0 0 32px;font-size:16px;line-height:1.6;">
-            Voce foi convidado(a) para acompanhar o desenvolvimento de <strong style="color:#059669;">${studentName}</strong> pela plataforma <strong>${tenantName}</strong>.
+            Você foi convidado(a) para acompanhar o desenvolvimento de <strong style="color:#059669;">${studentName}</strong> pela plataforma <strong>${tenantName}</strong>.
           </p>
           <div style="background:#f0fdf4;border-radius:12px;padding:24px;margin-bottom:32px;border-left:4px solid #059669;">
             <p style="color:#475569;margin:0;font-size:15px;line-height:1.6;">
-              No Portal da Familia, voce podera ver as forcas de carater do(a) seu(sua) filho(a), sugestoes de atividades para fazer em casa e acompanhar a evolucao ao longo do ano.
+              No Portal da Família, você poderá ver as forças de caráter do(a) seu(sua) filho(a), sugestões de atividades para fazer em casa e acompanhar a evolução ao longo do ano.
             </p>
           </div>
           <table width="100%" cellpadding="0" cellspacing="0">
@@ -332,14 +344,14 @@ function getGuardianInviteEmailHtml(studentName: string, inviteLink: string, ten
             </td></tr>
           </table>
           <p style="color:#94a3b8;margin:32px 0 0;font-size:13px;text-align:center;">
-            Este convite e valido por 7 dias.<br>
-            Se o botao nao funcionar, copie e cole este link no navegador:<br>
+            Este convite é válido por 7 dias.<br>
+            Se o botão não funcionar, copie e cole este link no navegador:<br>
             <a href="${inviteLink}" style="color:#059669;word-break:break-all;">${inviteLink}</a>
           </p>
         </td></tr>
         <tr><td style="padding:24px 40px;background-color:#f8fafc;border-radius:0 0 16px 16px;border-top:1px solid #e2e8f0;">
           <p style="color:#94a3b8;margin:0;font-size:12px;text-align:center;">
-            &copy; ${new Date().getFullYear()} Triavium Educacao e Desenvolvimento LTDA
+            &copy; ${new Date().getFullYear()} Triavium Educação e Desenvolvimento LTDA
           </p>
         </td></tr>
       </table>

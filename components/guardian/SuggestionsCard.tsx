@@ -18,7 +18,7 @@ export function SuggestionsCard({ suggestions }: SuggestionsCardProps) {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Lightbulb size={20} className="text-yellow-500" />
-          Sugestoes para Casa
+          Sugestões para Casa
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">

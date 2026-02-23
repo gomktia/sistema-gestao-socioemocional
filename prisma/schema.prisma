@@ -337,15 +337,16 @@ model StudentGuardian {
 }
 
 model GuardianInvite {
-  id        String       @id @default(cuid())
-  tenantId  String
-  studentId String
-  email     String
-  token     String       @unique
-  status    InviteStatus @default(PENDING)
-  invitedBy String
-  createdAt DateTime     @default(now())
-  expiresAt DateTime
+  id           String                @id @default(cuid())
+  tenantId     String
+  studentId    String
+  email        String
+  token        String                @unique
+  status       InviteStatus          @default(PENDING)
+  relationship GuardianRelationship  @default(OUTRO)
+  invitedBy    String
+  createdAt    DateTime              @default(now())
+  expiresAt    DateTime
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   student Student @relation(fields: [studentId], references: [id])

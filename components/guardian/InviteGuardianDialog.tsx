@@ -30,9 +30,9 @@ interface InviteGuardianDialogProps {
 }
 
 const RELATIONSHIP_OPTIONS = [
-    { value: 'MAE', label: 'Mae' },
+    { value: 'MAE', label: 'Mãe' },
     { value: 'PAI', label: 'Pai' },
-    { value: 'AVO_A', label: 'Avo/Avo' },
+    { value: 'AVO_A', label: 'Avô/Avó' },
     { value: 'TIO_A', label: 'Tio/Tia' },
     { value: 'OUTRO', label: 'Outro' },
 ];
@@ -80,7 +80,7 @@ export function InviteGuardianDialog({
                 }
 
                 if (result.alreadyHadAccount) {
-                    toast.success('Responsavel vinculado com sucesso! A conta ja existia.');
+                    toast.success('Responsável vinculado com sucesso! A conta já existia.');
                     setOpen(false);
                     resetState();
                     return;
@@ -91,7 +91,7 @@ export function InviteGuardianDialog({
                     if (result.emailSent) {
                         toast.success('Convite enviado por e-mail com sucesso!');
                     } else {
-                        toast.info('Convite criado. Compartilhe o link abaixo com o responsavel.');
+                        toast.info('Convite criado. Compartilhe o link abaixo com o responsável.');
                     }
                 }
             } catch {
@@ -120,21 +120,21 @@ export function InviteGuardianDialog({
                     className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300"
                 >
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Convidar Responsavel
+                    Convidar Responsável
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Convidar Responsavel</DialogTitle>
+                    <DialogTitle>Convidar Responsável</DialogTitle>
                     <DialogDescription>
-                        Envie um convite para o responsavel de {studentName} acessar o Portal da Familia.
+                        Envie um convite para o responsável de {studentName} acessar o Portal da Família.
                     </DialogDescription>
                 </DialogHeader>
 
                 {!inviteLink ? (
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="guardian-email">E-mail do responsavel</Label>
+                            <Label htmlFor="guardian-email">E-mail do responsável</Label>
                             <Input
                                 id="guardian-email"
                                 type="email"
@@ -204,7 +204,7 @@ export function InviteGuardianDialog({
                                 </Button>
                             </div>
                             <p className="text-xs text-emerald-600 mt-2">
-                                Este link e valido por 7 dias.
+                                Este link é válido por 7 dias.
                             </p>
                         </div>
 

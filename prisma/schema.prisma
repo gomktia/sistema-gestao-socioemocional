@@ -290,6 +290,8 @@ model Student {
   systemAlertLevel   AlertLevel           @default(GREEN)
   specialEducationNeeds Json?
   studentMessages      StudentMessage[]
+  guardians            StudentGuardian[]
+  guardianInvites      GuardianInvite[]
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, enrollmentId])
@@ -314,6 +316,44 @@ model StudentMessage {
   @@index([studentId])
   @@index([riskLevel])
   @@map("student_messages")
+}
+
+model StudentGuardian {
+  id           String                @id @default(cuid())
+  tenantId     String
+  studentId    String
+  guardianId   String
+  relationship GuardianRelationship
+  createdAt    DateTime              @default(now())
+
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student  Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian User    @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, guardianId])
+  @@index([guardianId])
+  @@index([tenantId])
+  @@map("student_guardians")
+}
+
+model GuardianInvite {
+  id        String       @id @default(cuid())
+  tenantId  String
+  studentId String
+  email     String
+  token     String       @unique
+  status    InviteStatus @default(PENDING)
+  invitedBy String
+  createdAt DateTime     @default(now())
+  expiresAt DateTime
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id])
+  inviter User    @relation("GuardianInviter", fields: [invitedBy], references: [id])
+
+  @@index([token])
+  @@index([tenantId])
+  @@map("guardian_invites")
 }
 
 enum AlertLevel {
@@ -373,6 +413,8 @@ model Tenant {
   productFeedbacks    ProductFeedback[]
   auditLogs           AuditLog[]
   studentMessages     StudentMessage[]
+  studentGuardians    StudentGuardian[]
+  guardianInvites     GuardianInvite[]
 
   @@map("tenants")
 }
@@ -399,6 +441,8 @@ model User {
   productFeedbacks   ProductFeedback[]
   student            Student?            @relation(fields: [studentId], references: [id])
   tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  guardianStudents   StudentGuardian[]
+  guardianInvites    GuardianInvite[]    @relation("GuardianInviter")
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, email])
@@ -497,6 +541,7 @@ enum Role {
   COUNSELOR
   TEACHER
   STUDENT
+  RESPONSIBLE
 }
 
 enum ScreeningWindow {
@@ -561,4 +606,18 @@ enum FeedbackStatus {
   PLANNED
   IMPLEMENTED
   REJECTED
+}
+
+enum GuardianRelationship {
+  MAE
+  PAI
+  AVO_A
+  TIO_A
+  OUTRO
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
 }

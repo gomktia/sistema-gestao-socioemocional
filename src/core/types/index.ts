@@ -34,6 +34,7 @@ export enum UserRole {
   COUNSELOR = 'COUNSELOR',   // Orientador educacional
   TEACHER = 'TEACHER',       // Professor
   STUDENT = 'STUDENT',       // Aluno
+  RESPONSIBLE = 'RESPONSIBLE', // Responsável (pai/mãe/guardião)
 }
 
 export enum ScreeningWindow {

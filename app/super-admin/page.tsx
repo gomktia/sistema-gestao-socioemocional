@@ -1,5 +1,4 @@
-import { prisma } from '@/lib/prisma';
-import { requireSuperAdmin } from '@/lib/auth';
+import { getDashboardMetrics } from '@/app/actions/super-admin';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import {
     ExternalLink,
     FileText,
     Activity,
-    BrainCircuit
+    BrainCircuit,
+    AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -22,48 +22,43 @@ export const metadata = {
     title: 'Super Admin | Triavium SaaS',
 };
 
-function getSuggestedPlan(studentCount: number, reportCount: number, assessmentCount: number) {
-    // Sovereign Logic: Very high volume or high intensity usage (many reports/assessments per student)
-    if (studentCount > 1000 || reportCount > 500) return 'SOVEREIGN';
-
-    // Advance Logic: Moderate volume or active usage of reports
-    if (studentCount > 200 || reportCount > 50) return 'ADVANCE';
-
-    // Essential Logic: Default entry level
+function getSuggestedPlan(studentCount: number, assessmentCount: number): string {
+    if (studentCount > 1000) return 'SOVEREIGN';
+    if (studentCount > 200) return 'ADVANCE';
     return 'ESSENTIAL';
 }
 
+function getPlanBadge(plan: string): React.ReactNode {
+    if (plan === 'SOVEREIGN') {
+        return <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">SOVEREIGN</Badge>;
+    }
+    if (plan === 'ADVANCE') {
+        return <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 text-[10px]">ADVANCE</Badge>;
+    }
+    return <Badge variant="outline" className="text-slate-400 text-[10px]">ESSENTIAL</Badge>;
+}
+
 export default async function SuperAdminPage() {
-    await requireSuperAdmin();
+    const metrics = await getDashboardMetrics();
 
-    const tenants = await prisma.tenant.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-            _count: {
-                select: {
-                    users: true,
-                    students: true,
-                    assessments: true,
-                    interventionLogs: {
-                        where: { type: 'INDIVIDUAL_PLAN' } // Count only reports/plans
-                    }
-                }
-            },
-        },
-    });
+    const {
+        totalTenants,
+        activeTenants,
+        totalStudents,
+        totalAssessments,
+        totalReports,
+        inactiveSchools,
+        tenants,
+    } = metrics;
 
-    // 2. Metadados Globais
-    const totalTenants = tenants.length;
-    const activeTenants = tenants.filter(t => t.subscriptionStatus === 'active').length;
-    const totalStudents = tenants.reduce((acc, t) => acc + t._count.students, 0);
-    const totalReports = tenants.reduce((acc, t) => acc + t._count.interventionLogs, 0);
-    const totalAssessments = tenants.reduce((acc, t) => acc + t._count.assessments, 0);
+    const revenueMonthly = activeTenants * 1990;
+    const activePercent = totalTenants > 0
+        ? Math.round((activeTenants / totalTenants) * 100)
+        : 0;
 
-    // Revenue placeholder logic
-    const revenueMonthly = activeTenants * 1990; // Base Plan price
-
-    // Sort tenants by usage (potential upgrades)
-    const topConsumers = [...tenants].sort((a, b) => b._count.interventionLogs - a._count.interventionLogs).slice(0, 5);
+    const tenantsWithBadSubscription = tenants.filter(
+        (t) => t.subscriptionStatus !== 'active'
+    );
 
     return (
         <div className="min-h-screen bg-slate-50 p-8">
@@ -95,7 +90,13 @@ export default async function SuperAdminPage() {
                     <StatCard title="Total Escolas" value={totalTenants} icon={Building2} color="text-indigo-600" />
                     <StatCard title="Assinaturas Ativas" value={activeTenants} icon={CreditCard} color="text-emerald-500" />
                     <StatCard title="Alunos Monitorados" value={totalStudents.toLocaleString('pt-BR')} icon={Users} color="text-blue-500" />
-                    <StatCard title="MRR Estimado" value={`R$ ${revenueMonthly.toLocaleString('pt-BR')}`} icon={Clock} color="text-amber-500" />
+                    <StatCard
+                        title="Receita Estimada"
+                        value={`R$ ${revenueMonthly.toLocaleString('pt-BR')}`}
+                        icon={Clock}
+                        color="text-amber-500"
+                        description="(baseado em planos ativos)"
+                    />
                 </div>
 
                 {/* Métricas de Uso (Operational) */}
@@ -131,14 +132,77 @@ export default async function SuperAdminPage() {
                             <div className="h-10 w-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
                                 <BrainCircuit size={20} />
                             </div>
-                            <Badge variant="secondary" className="bg-cyan-50 text-cyan-700">Health Score</Badge>
+                            <Badge variant="secondary" className="bg-cyan-50 text-cyan-700">Escolas Ativas</Badge>
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-3xl font-black text-slate-900 tracking-tight">98.5%</h3>
-                            <p className="text-xs text-slate-400 font-medium">Uptime e estabilidade do sistema</p>
+                            <h3 className="text-3xl font-black text-slate-900 tracking-tight">{activePercent}%</h3>
+                            <p className="text-xs text-slate-400 font-medium">{activeTenants} de {totalTenants} escolas ativas</p>
                         </div>
                     </Card>
                 </div>
+
+                {/* Alerts Section */}
+                {(inactiveSchools.length > 0 || tenantsWithBadSubscription.length > 0) && (
+                    <div className="space-y-4">
+                        {inactiveSchools.length > 0 && (
+                            <Card className="border-amber-200 bg-amber-50 shadow-sm">
+                                <CardContent className="p-6">
+                                    <div className="flex items-start gap-3">
+                                        <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                                            <AlertTriangle size={20} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-black text-amber-800 uppercase tracking-wide">
+                                                Escolas sem atividade nos últimos 30 dias
+                                            </h4>
+                                            <p className="text-xs text-amber-700">
+                                                {inactiveSchools.length} escola(s) ativa(s) sem nenhuma triagem recente.
+                                            </p>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {inactiveSchools.map((school) => (
+                                                    <Link key={school.id} href={`/super-admin/escola/${school.id}`}>
+                                                        <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200 cursor-pointer text-xs">
+                                                            {school.name}
+                                                        </Badge>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {tenantsWithBadSubscription.length > 0 && (
+                            <Card className="border-red-200 bg-red-50 shadow-sm">
+                                <CardContent className="p-6">
+                                    <div className="flex items-start gap-3">
+                                        <div className="h-10 w-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                                            <CreditCard size={20} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-black text-red-800 uppercase tracking-wide">
+                                                Assinaturas com problema
+                                            </h4>
+                                            <p className="text-xs text-red-700">
+                                                {tenantsWithBadSubscription.length} escola(s) com assinatura diferente de &quot;active&quot;.
+                                            </p>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {tenantsWithBadSubscription.map((t) => (
+                                                    <Link key={t.id} href={`/super-admin/escola/${t.id}`}>
+                                                        <Badge className="bg-red-100 text-red-800 border-red-300 hover:bg-red-200 cursor-pointer text-xs">
+                                                            {t.name} ({t.subscriptionStatus})
+                                                        </Badge>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                )}
 
                 {/* Lista de Escolas / Tenants */}
                 <Card className="border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
@@ -159,7 +223,7 @@ export default async function SuperAdminPage() {
                                         <th className="px-6 py-4">Organização</th>
                                         <th className="px-6 py-4 text-center">Membros</th>
                                         <th className="px-6 py-4 text-center">Triagens</th>
-                                        <th className="px-6 py-4 text-center">Laudos</th>
+                                        <th className="px-6 py-4 text-center">Alunos</th>
                                         <th className="px-6 py-4">Plano Sugerido</th>
                                         <th className="px-6 py-4 text-right">Ações</th>
                                     </tr>
@@ -168,7 +232,6 @@ export default async function SuperAdminPage() {
                                     {tenants.map((tenant) => {
                                         const suggestedPlan = getSuggestedPlan(
                                             tenant._count.students,
-                                            tenant._count.interventionLogs,
                                             tenant._count.assessments
                                         );
 
@@ -194,24 +257,18 @@ export default async function SuperAdminPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-5 text-center font-black text-slate-600 text-sm">
-                                                    {tenant._count.students}
+                                                    {tenant._count.users}
                                                 </td>
                                                 <td className="px-6 py-5 text-center font-black text-slate-600 text-sm">
                                                     {tenant._count.assessments}
                                                 </td>
                                                 <td className="px-6 py-5 text-center">
                                                     <Badge variant="outline" className="font-black border-slate-200">
-                                                        {tenant._count.interventionLogs}
+                                                        {tenant._count.students}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-5">
-                                                    {suggestedPlan === 'SOVEREIGN' ? (
-                                                        <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">SOVEREIGN</Badge>
-                                                    ) : suggestedPlan === 'ADVANCE' ? (
-                                                        <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 text-[10px]">ADVANCE</Badge>
-                                                    ) : (
-                                                        <Badge variant="outline" className="text-slate-400 text-[10px]">ESSENTIAL</Badge>
-                                                    )}
+                                                    {getPlanBadge(suggestedPlan)}
                                                 </td>
                                                 <td className="px-6 py-5 text-right">
                                                     <div className="flex justify-end gap-2">
@@ -223,7 +280,7 @@ export default async function SuperAdminPage() {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        )
+                                        );
                                     })}
                                 </tbody>
                             </table>
@@ -235,7 +292,15 @@ export default async function SuperAdminPage() {
     );
 }
 
-function StatCard({ title, value, icon: Icon, color }: any) {
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ComponentType<{ size?: number }>;
+    color: string;
+    description?: string;
+}
+
+function StatCard({ title, value, icon: Icon, color, description }: StatCardProps) {
     return (
         <Card className="border-slate-200 shadow-sm bg-white p-6">
             <div className="flex items-center justify-between mb-4">
@@ -245,6 +310,9 @@ function StatCard({ title, value, icon: Icon, color }: any) {
             </div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
             <h3 className="text-2xl font-black text-slate-900 tracking-tight">{value}</h3>
+            {description && (
+                <p className="text-[10px] text-slate-400 mt-1">{description}</p>
+            )}
         </Card>
     );
 }

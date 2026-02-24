@@ -139,6 +139,7 @@ export async function getDashboardMetrics() {
                 name: true,
                 slug: true,
                 isActive: true,
+                subscriptionStatus: true,
                 createdAt: true,
                 city: true,
                 state: true,
@@ -165,9 +166,9 @@ export async function getDashboardMetrics() {
         tenantsWithRecentAssessments.map((t) => t.id)
     );
 
-    const inactiveSchools = tenants.filter(
-        (t) => t.isActive && !activeAssessmentTenantIds.has(t.id)
-    );
+    const inactiveSchools = tenants
+        .filter((t) => t.isActive && !activeAssessmentTenantIds.has(t.id))
+        .map((t) => ({ id: t.id, name: t.name, slug: t.slug }));
 
     return {
         totalTenants,
@@ -175,7 +176,7 @@ export async function getDashboardMetrics() {
         totalStudents,
         totalAssessments,
         totalReports,
-        inactiveSchools: inactiveSchools.length,
+        inactiveSchools,
         tenants,
     };
 }

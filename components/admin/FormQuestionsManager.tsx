@@ -18,7 +18,7 @@ interface FormQuestion {
     number: number
     text: string
     category: string | null
-    type: 'VIA_STRENGTHS' | 'SRSS_IE' | 'BIG_FIVE' | 'IEAA'
+    type: 'VIA_STRENGTHS' | 'SRSS_IE' | 'BIG_FIVE' | 'IEAA' | 'SDQ'
     educationalLevel: 'KINDERGARTEN' | 'ELEMENTARY' | 'HIGH_SCHOOL'
     isActive: boolean
     order: number
@@ -33,7 +33,7 @@ interface FormQuestionsManagerProps {
 export function FormQuestionsManager({ initialQuestions, canEdit = false }: FormQuestionsManagerProps) {
     const [questions, setQuestions] = useState<FormQuestion[]>(initialQuestions)
     const [search, setSearch] = useState('')
-    const [selectedType, setSelectedType] = useState<'ALL' | 'VIA_STRENGTHS' | 'SRSS_IE' | 'BIG_FIVE' | 'IEAA'>('ALL')
+    const [selectedType, setSelectedType] = useState<'ALL' | 'VIA_STRENGTHS' | 'SRSS_IE' | 'BIG_FIVE' | 'IEAA' | 'SDQ'>('ALL')
 
     // Estado do Modal
     const [isOpen, setIsOpen] = useState(false)
@@ -160,6 +160,7 @@ export function FormQuestionsManager({ initialQuestions, canEdit = false }: Form
                         <option value="SRSS_IE">SRSS-IE (Risco)</option>
                         <option value="BIG_FIVE">BIG FIVE (Personalidade)</option>
                         <option value="IEAA">IEAA (Autorregulação)</option>
+                        <option value="SDQ">SDQ (Capacidades e Dificuldades)</option>
                     </select>
 
                     {canEdit && (
@@ -253,6 +254,7 @@ export function FormQuestionsManager({ initialQuestions, canEdit = false }: Form
                                 <option value="SRSS_IE">SRSS-IE (Risco)</option>
                                 <option value="BIG_FIVE">BIG FIVE (Personalidade)</option>
                                 <option value="IEAA">IEAA (Autorregulação)</option>
+                                <option value="SDQ">SDQ (Capacidades e Dificuldades)</option>
                             </select>
                         </div>
 

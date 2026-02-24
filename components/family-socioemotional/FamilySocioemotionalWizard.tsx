@@ -97,7 +97,8 @@ export function FamilySocioemotionalWizard({
         } else {
             setCurrentStepIdx(prev => prev + 1);
             setShowValidation(false);
-            window.scrollTo(0, 0);
+            const main = document.querySelector('main');
+            main ? main.scrollTo({ top: 0, behavior: 'smooth' }) : window.scrollTo(0, 0);
         }
     };
 
@@ -105,7 +106,8 @@ export function FamilySocioemotionalWizard({
         if (currentStepIdx > 0) {
             setCurrentStepIdx(prev => prev - 1);
             setShowValidation(false);
-            window.scrollTo(0, 0);
+            const main = document.querySelector('main');
+            main ? main.scrollTo({ top: 0, behavior: 'smooth' }) : window.scrollTo(0, 0);
         }
     };
 

@@ -76,8 +76,10 @@ export default async function SchoolsPage() {
                                                         <Building2 size={20} />
                                                     </div>
                                                     <div>
-                                                        <p className="font-black text-slate-800 text-sm leading-none mb-1">{tenant.name}</p>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{tenant.slug}</p>
+                                                        <Link href={`/super-admin/escola/${tenant.id}`} className="font-black text-slate-800 text-sm leading-none mb-1 hover:text-indigo-600 transition-colors">
+                                                            {tenant.name}
+                                                        </Link>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{tenant.slug}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -120,7 +122,7 @@ export default async function SchoolsPage() {
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600">
                                                         <Settings2 size={16} />
                                                     </Button>
-                                                    <Link href={`/super-admin/school-access/${tenant.slug}`}>
+                                                    <Link href={`/super-admin/escola/${tenant.id}`}>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600 shadow-none">
                                                             <ExternalLink size={16} />
                                                         </Button>

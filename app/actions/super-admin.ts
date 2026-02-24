@@ -6,7 +6,7 @@ import { logAudit } from '@/lib/audit';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
-import { Role } from '@prisma/client';
+import { OrganizationType, Role } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -256,6 +256,8 @@ export async function updateTenantDetails(
         cnpj?: string;
         logoUrl?: string;
         customDomain?: string;
+        organizationType?: OrganizationType;
+        subscriptionStatus?: string;
     }
 ) {
     const admin = await requireSuperAdmin();

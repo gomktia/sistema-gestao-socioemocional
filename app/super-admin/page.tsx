@@ -215,7 +215,7 @@ export default async function SuperAdminPage() {
                                                 </td>
                                                 <td className="px-6 py-5 text-right">
                                                     <div className="flex justify-end gap-2">
-                                                        <Link href={`/super-admin/school-access/${tenant.slug}`}>
+                                                        <Link href={`/super-admin/escola/${tenant.id}`}>
                                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600 shadow-none">
                                                                 <ExternalLink size={16} />
                                                             </Button>

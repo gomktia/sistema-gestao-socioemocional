@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getCurrentUser } from '@/lib/auth';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -20,6 +21,22 @@ export default async function SuperAdminLayout({
 
     if (user.role !== 'ADMIN') {
         redirect('/');
+    }
+
+    // Clear impersonation cookies when returning to super-admin panel
+    const cookieStore = await cookies();
+    if (cookieStore.get('impersonating')?.value === 'true') {
+        cookieStore.delete('impersonating');
+        cookieStore.delete('active_tenant_id');
+        const originalId = cookieStore.get('original_tenant_id')?.value;
+        if (originalId) {
+            cookieStore.set('active_tenant_id', originalId, {
+                path: '/',
+                httpOnly: true,
+                sameSite: 'lax',
+            });
+        }
+        cookieStore.delete('original_tenant_id');
     }
 
     const navItems = getNavForRole(user.role);

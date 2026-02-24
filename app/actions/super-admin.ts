@@ -6,7 +6,7 @@ import { logAudit } from '@/lib/audit';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
-import { OrganizationType, Role } from '@prisma/client';
+import { InvoiceStatus, OrganizationType, Role } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -587,4 +587,250 @@ export async function getAuditLogs(filters?: {
         pageSize,
         totalPages: Math.ceil(total / pageSize),
     };
+}
+
+// ---------------------------------------------------------------------------
+// Financial — Dashboard
+// ---------------------------------------------------------------------------
+
+export async function getFinancialDashboard() {
+    await requireSuperAdmin();
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const [
+        activePlans,
+        pendingInvoices,
+        overdueInvoices,
+        paidThisMonthAgg,
+        plans,
+    ] = await Promise.all([
+        prisma.tenantPlan.findMany({
+            where: { isActive: true },
+            select: { monthlyPrice: true },
+        }),
+        prisma.invoice.count({ where: { status: 'PENDING' } }),
+        prisma.invoice.count({ where: { status: 'OVERDUE' } }),
+        prisma.invoice.aggregate({
+            where: {
+                status: 'PAID',
+                paidDate: { gte: startOfMonth, lte: endOfMonth },
+            },
+            _sum: { amount: true },
+        }),
+        prisma.tenantPlan.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                tenant: { select: { id: true, name: true } },
+            },
+        }),
+    ]);
+
+    const mrr = activePlans.reduce((sum, p) => sum + p.monthlyPrice, 0);
+    const paidThisMonth = paidThisMonthAgg._sum.amount ?? 0;
+
+    return {
+        mrr,
+        activePlansCount: activePlans.length,
+        pendingInvoices,
+        overdueInvoices,
+        paidThisMonth,
+        plans,
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Financial — Invoices (paginated + filters)
+// ---------------------------------------------------------------------------
+
+export async function getInvoices(filters?: {
+    tenantId?: string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+}) {
+    await requireSuperAdmin();
+
+    const page = filters?.page ?? 1;
+    const pageSize = filters?.pageSize ?? 50;
+    const skip = (page - 1) * pageSize;
+
+    const where: Record<string, unknown> = {};
+
+    if (filters?.tenantId) {
+        where.tenantId = filters.tenantId;
+    }
+
+    if (filters?.status) {
+        where.status = filters.status;
+    }
+
+    const [invoices, total] = await Promise.all([
+        prisma.invoice.findMany({
+            where,
+            skip,
+            take: pageSize,
+            orderBy: { dueDate: 'desc' },
+            include: {
+                tenant: { select: { id: true, name: true } },
+                plan: { select: { id: true, planName: true } },
+            },
+        }),
+        prisma.invoice.count({ where }),
+    ]);
+
+    return {
+        invoices,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Financial — Create Invoice
+// ---------------------------------------------------------------------------
+
+export async function createInvoice(data: {
+    tenantId: string;
+    amount: number;
+    dueDate: string;
+    description?: string;
+    planId?: string;
+}) {
+    const admin = await requireSuperAdmin();
+
+    const tenant = await prisma.tenant.findUnique({
+        where: { id: data.tenantId },
+        select: { id: true, name: true },
+    });
+
+    if (!tenant) {
+        return { error: 'Escola nao encontrada.' };
+    }
+
+    const invoice = await prisma.invoice.create({
+        data: {
+            tenantId: data.tenantId,
+            amount: data.amount,
+            dueDate: new Date(data.dueDate),
+            description: data.description || null,
+            planId: data.planId || null,
+        },
+    });
+
+    await logAudit({
+        tenantId: admin.tenantId,
+        userId: admin.id,
+        action: 'CREATE_INVOICE',
+        targetId: invoice.id,
+        details: {
+            tenantName: tenant.name,
+            amount: data.amount,
+            dueDate: data.dueDate,
+        },
+    });
+
+    revalidatePath('/super-admin/financeiro');
+    return { success: true, invoiceId: invoice.id };
+}
+
+// ---------------------------------------------------------------------------
+// Financial — Update Invoice Status
+// ---------------------------------------------------------------------------
+
+export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStatus) {
+    const admin = await requireSuperAdmin();
+
+    const invoice = await prisma.invoice.findUnique({
+        where: { id: invoiceId },
+        select: { id: true, status: true, tenantId: true, tenant: { select: { name: true } } },
+    });
+
+    if (!invoice) {
+        return { error: 'Fatura nao encontrada.' };
+    }
+
+    const updateData: { status: InvoiceStatus; paidDate?: Date } = { status };
+    if (status === 'PAID') {
+        updateData.paidDate = new Date();
+    }
+
+    await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: updateData,
+    });
+
+    await logAudit({
+        tenantId: admin.tenantId,
+        userId: admin.id,
+        action: 'UPDATE_INVOICE_STATUS',
+        targetId: invoiceId,
+        details: {
+            tenantName: invoice.tenant.name,
+            previousStatus: invoice.status,
+            newStatus: status,
+        },
+    });
+
+    revalidatePath('/super-admin/financeiro');
+    return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Financial — Assign Plan to Tenant
+// ---------------------------------------------------------------------------
+
+export async function assignPlan(data: {
+    tenantId: string;
+    planName: string;
+    monthlyPrice: number;
+    studentLimit?: number;
+    startDate: string;
+}) {
+    const admin = await requireSuperAdmin();
+
+    const tenant = await prisma.tenant.findUnique({
+        where: { id: data.tenantId },
+        select: { id: true, name: true },
+    });
+
+    if (!tenant) {
+        return { error: 'Escola nao encontrada.' };
+    }
+
+    // Deactivate existing active plans for this tenant
+    await prisma.tenantPlan.updateMany({
+        where: { tenantId: data.tenantId, isActive: true },
+        data: { isActive: false, endDate: new Date() },
+    });
+
+    const plan = await prisma.tenantPlan.create({
+        data: {
+            tenantId: data.tenantId,
+            planName: data.planName,
+            monthlyPrice: data.monthlyPrice,
+            studentLimit: data.studentLimit ?? null,
+            startDate: new Date(data.startDate),
+            isActive: true,
+        },
+    });
+
+    await logAudit({
+        tenantId: admin.tenantId,
+        userId: admin.id,
+        action: 'ASSIGN_PLAN',
+        targetId: plan.id,
+        details: {
+            tenantName: tenant.name,
+            planName: data.planName,
+            monthlyPrice: data.monthlyPrice,
+        },
+    });
+
+    revalidatePath('/super-admin/financeiro');
+    return { success: true, planId: plan.id };
 }

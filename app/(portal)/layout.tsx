@@ -48,7 +48,7 @@ export default async function PortalLayout({
     const tenants = await getMyTenants();
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden lg:flex-row bg-slate-50">
+        <div className="flex flex-col h-screen overflow-hidden lg:flex-row bg-slate-50 pt-[var(--sat)] pb-[var(--sab)] pl-[var(--sal)] pr-[var(--sar)]">
             <Sidebar
                 items={navItems}
                 userName={user.name}

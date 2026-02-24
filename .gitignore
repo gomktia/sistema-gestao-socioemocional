@@ -16,3 +16,9 @@ nul
 build_log*.txt
 deployments.txt
 env_val.txt
+
+# Capacitor
+android/app/build/
+android/.gradle/
+ios/App/Pods/
+ios/DerivedData/

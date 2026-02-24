@@ -3,7 +3,7 @@ import { updateSession } from '@/lib/supabase/middleware';
 import { resolveTenant, isMainDomain, extractSubdomain } from '@/lib/tenant-resolver';
 import { apiRateLimiter, authRateLimiter } from '@/lib/rate-limit';
 
-const PUBLIC_PATHS = ['/login', '/marketing', '/metodologia', '/subscription-expired', '/demo-setup', '/registrar', '/convite', '/convite-responsavel', '/esqueci-senha', '/redefinir-senha', '/auth'];
+const PUBLIC_PATHS = ['/login', '/marketing', '/metodologia', '/subscription-expired', '/registrar', '/convite', '/convite-responsavel', '/esqueci-senha', '/redefinir-senha', '/auth'];
 const MARKETING_PATHS = ['/', '/marketing', '/metodologia'];
 
 export async function middleware(request: NextRequest) {

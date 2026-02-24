@@ -505,7 +505,7 @@ export async function saveFamilySocioemotionalAnswers(
     if (isComplete) {
         processedScores = calculateFamilySocioemotionalScores(answers);
 
-        // Notify if any axis is in Zona de Atenção
+        // Notify if any axis is in Zona de Atenção (in-app + email)
         if (processedScores.attentionAxes.length > 0) {
             const student = await prisma.student.findUnique({
                 where: { id: targetStudentId },
@@ -514,15 +514,13 @@ export async function saveFamilySocioemotionalAnswers(
 
             const axisNames = processedScores.attentionAxes.map(a => a.label).join(', ');
 
-            const { createNotification, NotificationType } = await import('@/lib/notifications');
-            await createNotification({
-                tenantId: user.tenantId,
-                studentId: targetStudentId,
-                type: NotificationType.SYSTEM_ALERT,
-                title: 'Percepção Familiar: Zona de Atenção',
-                message: `A família de ${student?.name || 'aluno(a)'} sinalizou vulnerabilidade nos eixos: ${axisNames}. Recomenda-se triangulação com autoavaliação e observação docente.`,
-                link: `/alunos/${targetStudentId}`,
-            });
+            const { notifyFamilyAttentionZone } = await import('@/lib/notifications');
+            await notifyFamilyAttentionZone(
+                user.tenantId,
+                targetStudentId,
+                student?.name || 'aluno(a)',
+                axisNames,
+            );
         }
     }
 

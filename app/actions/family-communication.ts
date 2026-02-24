@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/src/core/types';
 import { revalidatePath } from 'next/cache';
-import { Resend } from 'resend';
+import { sendEmail } from '@/lib/mail';
 
 const MESSAGE_TYPES: Record<string, string> = {
   AVISO: 'Aviso',
@@ -65,18 +65,15 @@ export async function sendFamilyMessage(input: {
   });
 
   let emailSent = false;
-  if (process.env.RESEND_API_KEY && guardianLinks.length > 0) {
+  if (guardianLinks.length > 0) {
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
       const guardianEmails = guardianLinks.map((g) => g.guardian.email);
-
-      await resend.emails.send({
-        from: 'Triavium <noreply@triavium.com.br>',
+      const result = await sendEmail({
         to: guardianEmails,
         subject: `[${MESSAGE_TYPES[type]}] ${subject} - ${student.name}`,
         html: getFamilyMessageEmailHtml(student.name, MESSAGE_TYPES[type], subject, message, user.name),
       });
-      emailSent = true;
+      emailSent = result.success;
     } catch (err) {
       console.error('Failed to send family communication email:', err);
     }

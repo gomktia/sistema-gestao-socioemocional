@@ -3,9 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { Resend } from 'resend';
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+import { sendEmail } from '@/lib/mail';
 
 function getFeedbackNotificationHtml(
     userName: string,
@@ -117,37 +115,32 @@ export async function submitFeedback(data: { subject: string; description: strin
     });
 
     // Enviar email para administradores do sistema
-    if (resend) {
-        try {
-            // Buscar admins globais (super admins)
-            const admins = await prisma.user.findMany({
-                where: {
-                    role: 'ADMIN',
-                    isActive: true,
-                },
-                select: { email: true }
+    try {
+        const admins = await prisma.user.findMany({
+            where: {
+                role: 'ADMIN',
+                isActive: true,
+            },
+            select: { email: true }
+        });
+
+        const adminEmails = admins.map(a => a.email).filter(Boolean);
+
+        if (adminEmails.length > 0) {
+            await sendEmail({
+                to: adminEmails,
+                subject: `📣 Nova sugestão: ${data.subject}`,
+                html: getFeedbackNotificationHtml(
+                    user.name,
+                    user.email,
+                    tenant?.name || 'Organização',
+                    data.subject,
+                    data.description
+                ),
             });
-
-            const adminEmails = admins.map(a => a.email).filter(Boolean);
-
-            if (adminEmails.length > 0) {
-                await resend.emails.send({
-                    from: 'Triavium <noreply@triavium.com.br>',
-                    to: adminEmails,
-                    subject: `📣 Nova sugestão: ${data.subject}`,
-                    html: getFeedbackNotificationHtml(
-                        user.name,
-                        user.email,
-                        tenant?.name || 'Organização',
-                        data.subject,
-                        data.description
-                    ),
-                });
-            }
-        } catch (err) {
-            // Log error but don't fail the feedback submission
-            console.error('Failed to send feedback notification email:', err);
         }
+    } catch (err) {
+        console.error('Failed to send feedback notification email:', err);
     }
 
     revalidatePath('/sugestoes');

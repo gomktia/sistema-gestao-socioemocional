@@ -4,10 +4,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { analyzeMessageRisk, MessageRiskLevel } from '@/src/core/logic/sentiment';
 import { revalidatePath } from 'next/cache';
-import { Resend } from 'resend';
+import { sendEmail } from '@/lib/mail';
 import { getTenantUrl } from '@/lib/tenant-resolver';
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function getRiskAlertEmailHtml(studentName: string, content: string, profileUrl: string): string {
     return `
@@ -115,14 +113,13 @@ export async function sendStudentMessage(content: string) {
                 })
             ]);
 
-            if (resend && psychologists.length > 0) {
+            if (psychologists.length > 0) {
                 const tenantBaseUrl = tenant
                     ? getTenantUrl({ slug: tenant.slug, customDomain: tenant.customDomain })
                     : (process.env.NEXT_PUBLIC_APP_URL || 'https://triavium.com.br');
                 const profileUrl = `${tenantBaseUrl}/alunos/${user.studentId}`;
 
-                await resend.emails.send({
-                    from: 'Triavium <noreply@triavium.com.br>',
+                await sendEmail({
                     to: psychologists.map(p => p.email),
                     subject: `🚨 ALERTA DE RISCO - ${user.name}`,
                     html: getRiskAlertEmailHtml(user.name, content, profileUrl),

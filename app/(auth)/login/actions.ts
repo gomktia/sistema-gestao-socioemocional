@@ -73,7 +73,7 @@ export async function login(formData: FormData) {
                         where: { id: dbUser.id },
                         data: { supabaseUid },
                     });
-                    console.log('[LOGIN] Linked UID', supabaseUid, 'to user', emailToAuth);
+                    console.warn('[LOGIN] Linked Supabase UID to user record.');
                 }
 
                 // Setar o tenant ativo inicial
@@ -94,11 +94,9 @@ export async function login(formData: FormData) {
         // Next.js redirect lança um erro especial - deve ser re-lançado
         if (isRedirectError(error)) throw error;
 
-        const msg = error?.message || String(error);
-        console.error('[LOGIN CRITICAL ERROR]', msg, error?.stack);
+        console.error('[LOGIN CRITICAL ERROR]', error?.message || error);
 
-        // Retorna erro detalhado para diagnóstico (remover em produção depois)
-        return { error: `Erro no servidor: ${msg.substring(0, 200)}` };
+        return { error: 'Erro interno do servidor. Tente novamente ou contacte o administrador.' };
     }
 
     redirect('/');

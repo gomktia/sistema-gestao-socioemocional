@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { randomBytes } from 'crypto';
-import { Resend } from 'resend';
+import { sendEmail } from '@/lib/mail';
 import { getTenantUrl } from '@/lib/tenant-resolver';
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const ROLE_LABELS: Record<string, string> = {
     ADMIN: 'Administrador',
@@ -163,22 +161,19 @@ export async function POST(request: NextRequest) {
         let emailSent = false;
         let emailError: string | null = null;
 
-        if (resend) {
-            try {
-                await resend.emails.send({
-                    from: 'Triavium <noreply@triavium.com.br>',
-                    to: email.toLowerCase(),
-                    subject: `🎉 Você foi convidado(a) para a equipe ${tenant?.name || 'Triavium'}`,
-                    html: getInviteEmailHtml(name, role, inviteLink, tenant?.name || 'Triavium'),
-                });
-                emailSent = true;
-            } catch (err: any) {
-                console.error('Failed to send invite email:', err);
-                emailError = err.message || 'Erro ao enviar email';
+        try {
+            const result = await sendEmail({
+                to: email.toLowerCase(),
+                subject: `🎉 Você foi convidado(a) para a equipe ${tenant?.name || 'Triavium'}`,
+                html: getInviteEmailHtml(name, role, inviteLink, tenant?.name || 'Triavium'),
+            });
+            emailSent = result.success;
+            if (!result.success) {
+                emailError = result.error || 'Erro ao enviar email';
             }
-        } else {
-            console.warn('RESEND_API_KEY not configured, skipping email');
-            emailError = 'Serviço de email não configurado';
+        } catch (err: any) {
+            console.error('Failed to send invite email:', err);
+            emailError = err.message || 'Erro ao enviar email';
         }
 
         return NextResponse.json({

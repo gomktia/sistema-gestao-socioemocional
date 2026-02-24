@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 const DEMO_EMAILS = [
-    'geisonhoehr@gmail.com',
     'admin@escola.com',
     'psi@escola.com',
     'professor@escola.com',
@@ -17,6 +16,14 @@ const DEMO_EMAILS = [
 ];
 
 export default function DemoSetupPage() {
+    // Block in production — route also removed from PUBLIC_PATHS in middleware
+    if (process.env.NODE_ENV === 'production') {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-slate-500">Página não disponível.</p>
+            </div>
+        );
+    }
     const [loading, setLoading] = useState<string | null>(null);
     const [results, setResults] = useState<Record<string, 'success' | 'error' | 'exists'>>({});
 

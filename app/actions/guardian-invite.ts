@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/src/core/types';
 import { randomUUID } from 'crypto';
-import { Resend } from 'resend';
+import { sendEmail } from '@/lib/mail';
 import { getTenantUrl } from '@/lib/tenant-resolver';
 import { validateGuardianInviteInput, type InviteInput } from '@/lib/validators/guardian-invite';
 
@@ -105,19 +105,15 @@ export async function sendGuardianInvite(input: InviteInput) {
   const inviteLink = `${baseUrl}/convite-responsavel?token=${token}`;
 
   let emailSent = false;
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: 'Triavium <noreply@triavium.com.br>',
-        to: email,
-        subject: `Acompanhe o desenvolvimento de ${student.name} - ${tenant?.name || 'Triavium'}`,
-        html: getGuardianInviteEmailHtml(student.name, inviteLink, tenant?.name || 'Triavium'),
-      });
-      emailSent = true;
-    } catch (err) {
-      console.error('Failed to send guardian invite email:', err);
-    }
+  try {
+    const result = await sendEmail({
+      to: email,
+      subject: `Acompanhe o desenvolvimento de ${student.name} - ${tenant?.name || 'Triavium'}`,
+      html: getGuardianInviteEmailHtml(student.name, inviteLink, tenant?.name || 'Triavium'),
+    });
+    emailSent = result.success;
+  } catch (err) {
+    console.error('Failed to send guardian invite email:', err);
   }
 
   // Audit log

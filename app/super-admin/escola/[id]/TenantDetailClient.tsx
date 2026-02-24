@@ -18,6 +18,21 @@ import {
     Power,
     Calendar,
 } from 'lucide-react';
+import type { PieLabelRenderProps } from 'recharts';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    LineChart,
+    Line,
+    Legend,
+} from 'recharts';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +85,38 @@ const ROLE_COLORS: Record<string, string> = {
     RESPONSIBLE: 'bg-amber-100 text-amber-700',
 };
 
+const ASSESSMENT_TYPE_LABELS: Record<string, string> = {
+    SRSS: 'SRSS-IE',
+    BIG_FIVE: 'Big Five',
+    SDQ: 'SDQ',
+    FAMILY_SOCIOEMOTIONAL: 'Percepcao Familiar',
+};
+
+const ASSESSMENT_TYPE_COLORS: Record<string, string> = {
+    SRSS: '#6366f1',
+    BIG_FIVE: '#f59e0b',
+    SDQ: '#06b6d4',
+    FAMILY_SOCIOEMOTIONAL: '#8b5cf6',
+};
+
+const RISK_TIER_COLORS: Record<string, string> = {
+    TIER_1: '#10b981',
+    TIER_2: '#f59e0b',
+    TIER_3: '#ef4444',
+};
+
+const RISK_TIER_LABELS: Record<string, string> = {
+    TIER_1: 'Tier 1',
+    TIER_2: 'Tier 2',
+    TIER_3: 'Tier 3',
+};
+
+const SCREENING_WINDOW_LABELS: Record<string, string> = {
+    DIAGNOSTIC: 'Diagnostica',
+    MONITORING: 'Monitoramento',
+    FINAL: 'Final',
+};
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -110,11 +157,65 @@ interface TenantUser {
     tenant: { name: string } | null;
 }
 
+interface AnalyticsData {
+    assessmentsByType: Array<{ type: string; count: number }>;
+    riskDistribution: Array<{ tier: string | null; count: number }>;
+    engagement: { active: number; total: number; rate: number };
+    monthlyAssessments: Array<{ month: string; count: number }>;
+    monthlyStudents: Array<{ month: string; count: number }>;
+    recentWindows: Array<{
+        window: string;
+        academicYear: number;
+        count: number;
+        lastAppliedAt: string | null;
+    }>;
+}
+
 interface TenantDetailClientProps {
     tenant: TenantData;
     usersByRole: Record<string, number>;
     riskDistribution: Record<string, number>;
     lastActivity: string | null;
+    analytics?: AnalyticsData | null;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function renderPieLabel(props: PieLabelRenderProps): string {
+    const name = String(props.name ?? '');
+    const pct = Number(props.percent ?? 0);
+    return `${name} ${(pct * 100).toFixed(0)}%`;
+}
+
+function mergeMonthlyData(
+    assessments: Array<{ month: string; count: number }>,
+    students: Array<{ month: string; count: number }>
+): Array<{ month: string; assessments: number; students: number }> {
+    const map = new Map<string, { assessments: number; students: number }>();
+
+    for (const a of assessments) {
+        const existing = map.get(a.month);
+        if (existing) {
+            existing.assessments = a.count;
+        } else {
+            map.set(a.month, { assessments: a.count, students: 0 });
+        }
+    }
+
+    for (const s of students) {
+        const existing = map.get(s.month);
+        if (existing) {
+            existing.students = s.count;
+        } else {
+            map.set(s.month, { assessments: 0, students: s.count });
+        }
+    }
+
+    return Array.from(map.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, data]) => ({ month, ...data }));
 }
 
 // ---------------------------------------------------------------------------
@@ -126,6 +227,7 @@ export function TenantDetailClient({
     usersByRole,
     riskDistribution,
     lastActivity,
+    analytics,
 }: TenantDetailClientProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -495,6 +597,259 @@ export function TenantDetailClient({
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Analytics Charts */}
+                    {analytics && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Assessments by Type */}
+                            {analytics.assessmentsByType.length > 0 && (
+                                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                                        Triagens por Tipo
+                                    </h3>
+                                    <ResponsiveContainer width="100%" height={240}>
+                                        <BarChart
+                                            data={analytics.assessmentsByType.map(
+                                                (a) => ({
+                                                    name:
+                                                        ASSESSMENT_TYPE_LABELS[a.type] ??
+                                                        a.type,
+                                                    count: a.count,
+                                                    fill:
+                                                        ASSESSMENT_TYPE_COLORS[a.type] ??
+                                                        '#94a3b8',
+                                                })
+                                            )}
+                                        >
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fontSize: 11, fontWeight: 700 }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
+                                            <YAxis
+                                                allowDecimals={false}
+                                                tick={{ fontSize: 11 }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    borderRadius: 12,
+                                                    border: '1px solid #e2e8f0',
+                                                    fontSize: 12,
+                                                }}
+                                            />
+                                            <Bar
+                                                dataKey="count"
+                                                radius={[6, 6, 0, 0]}
+                                                name="Triagens"
+                                            >
+                                                {analytics.assessmentsByType.map(
+                                                    (a, index) => (
+                                                        <Cell
+                                                            key={index}
+                                                            fill={
+                                                                ASSESSMENT_TYPE_COLORS[
+                                                                    a.type
+                                                                ] ?? '#94a3b8'
+                                                            }
+                                                        />
+                                                    )
+                                                )}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+
+                            {/* Risk Distribution Pie */}
+                            {analytics.riskDistribution.length > 0 && (
+                                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                                        Distribuicao de Risco
+                                    </h3>
+                                    <ResponsiveContainer width="100%" height={240}>
+                                        <PieChart>
+                                            <Pie
+                                                data={analytics.riskDistribution.map(
+                                                    (r) => ({
+                                                        name:
+                                                            RISK_TIER_LABELS[
+                                                                r.tier ?? ''
+                                                            ] ?? r.tier,
+                                                        value: r.count,
+                                                    })
+                                                )}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={50}
+                                                outerRadius={90}
+                                                paddingAngle={3}
+                                                dataKey="value"
+                                                label={renderPieLabel}
+                                            >
+                                                {analytics.riskDistribution.map(
+                                                    (r, index) => (
+                                                        <Cell
+                                                            key={index}
+                                                            fill={
+                                                                RISK_TIER_COLORS[
+                                                                    r.tier ?? ''
+                                                                ] ?? '#94a3b8'
+                                                            }
+                                                        />
+                                                    )
+                                                )}
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={{
+                                                    borderRadius: 12,
+                                                    border: '1px solid #e2e8f0',
+                                                    fontSize: 12,
+                                                }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+
+                            {/* Monthly Usage Line Chart */}
+                            {(analytics.monthlyAssessments.length > 0 ||
+                                analytics.monthlyStudents.length > 0) && (
+                                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm md:col-span-2">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                                        Uso Mensal (Ultimos 6 Meses)
+                                    </h3>
+                                    <ResponsiveContainer width="100%" height={280}>
+                                        <LineChart
+                                            data={mergeMonthlyData(
+                                                analytics.monthlyAssessments,
+                                                analytics.monthlyStudents
+                                            )}
+                                        >
+                                            <XAxis
+                                                dataKey="month"
+                                                tick={{ fontSize: 11, fontWeight: 700 }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
+                                            <YAxis
+                                                allowDecimals={false}
+                                                tick={{ fontSize: 11 }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    borderRadius: 12,
+                                                    border: '1px solid #e2e8f0',
+                                                    fontSize: 12,
+                                                }}
+                                            />
+                                            <Legend
+                                                wrapperStyle={{ fontSize: 12 }}
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="assessments"
+                                                stroke="#6366f1"
+                                                strokeWidth={2}
+                                                dot={{ r: 4 }}
+                                                name="Triagens"
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="students"
+                                                stroke="#10b981"
+                                                strokeWidth={2}
+                                                dot={{ r: 4 }}
+                                                name="Novos Alunos"
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+
+                            {/* Engagement Card */}
+                            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                                    Engajamento
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-4xl font-black text-slate-900 tracking-tight">
+                                            {analytics.engagement.rate}%
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-400 uppercase">
+                                            taxa de engajamento
+                                        </span>
+                                    </div>
+                                    <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-indigo-500 rounded-full transition-all"
+                                            style={{
+                                                width: `${analytics.engagement.rate}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-xs text-slate-500">
+                                        <span>
+                                            <span className="font-black text-slate-800">
+                                                {analytics.engagement.active}
+                                            </span>{' '}
+                                            ativos (ultimos 30 dias)
+                                        </span>
+                                        <span>
+                                            <span className="font-black text-slate-800">
+                                                {analytics.engagement.total}
+                                            </span>{' '}
+                                            total
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Recent Screening Windows */}
+                            {analytics.recentWindows.length > 0 && (
+                                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                                        Janelas de Triagem Recentes
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {analytics.recentWindows.map((w, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between rounded-xl bg-slate-50 p-3"
+                                            >
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-800">
+                                                        {SCREENING_WINDOW_LABELS[
+                                                            w.window
+                                                        ] ?? w.window}{' '}
+                                                        {w.academicYear}
+                                                    </p>
+                                                    {w.lastAppliedAt && (
+                                                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                                                            Ultima:{' '}
+                                                            {new Date(
+                                                                w.lastAppliedAt
+                                                            ).toLocaleDateString(
+                                                                'pt-BR'
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <Badge className="bg-indigo-100 text-indigo-700 text-[10px] font-black border-none shadow-none">
+                                                    {w.count} triagens
+                                                </Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </TabsContent>
 
                 {/* ============================================================

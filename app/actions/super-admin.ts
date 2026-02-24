@@ -834,3 +834,102 @@ export async function assignPlan(data: {
     revalidatePath('/super-admin/financeiro');
     return { success: true, planId: plan.id };
 }
+
+// ---------------------------------------------------------------------------
+// Analytics
+// ---------------------------------------------------------------------------
+
+export async function getTenantAnalytics(tenantId: string) {
+    await requireSuperAdmin();
+
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+        assessmentsByType,
+        riskDistribution,
+        activeUsers,
+        totalUsers,
+        monthlyAssessments,
+        monthlyStudents,
+        recentScreeningWindows,
+    ] = await Promise.all([
+        // Assessments by type
+        prisma.assessment.groupBy({
+            by: ['type'],
+            where: { tenantId },
+            _count: true,
+        }),
+        // Risk tier distribution
+        prisma.assessment.groupBy({
+            by: ['overallTier'],
+            where: { tenantId, overallTier: { not: null } },
+            _count: true,
+        }),
+        // Active users (with audit activity in last 30 days)
+        prisma.auditLog.groupBy({
+            by: ['userId'],
+            where: { tenantId, timestamp: { gte: thirtyDaysAgo } },
+        }).then((rows) => rows.length),
+        // Total active users
+        prisma.user.count({
+            where: { tenantId, isActive: true },
+        }),
+        // Monthly assessment counts (last 6 months)
+        prisma.$queryRaw`
+            SELECT
+                TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') as month,
+                COUNT(*)::int as count
+            FROM assessments
+            WHERE "tenantId" = ${tenantId}
+            AND "createdAt" >= ${sixMonthsAgo}
+            GROUP BY DATE_TRUNC('month', "createdAt")
+            ORDER BY month ASC
+        ` as Promise<Array<{ month: string; count: number }>>,
+        // Monthly new students (last 6 months)
+        prisma.$queryRaw`
+            SELECT
+                TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') as month,
+                COUNT(*)::int as count
+            FROM students
+            WHERE "tenantId" = ${tenantId}
+            AND "createdAt" >= ${sixMonthsAgo}
+            GROUP BY DATE_TRUNC('month', "createdAt")
+            ORDER BY month ASC
+        ` as Promise<Array<{ month: string; count: number }>>,
+        // Recent screening windows (latest assessments per window type)
+        prisma.assessment.groupBy({
+            by: ['screeningWindow', 'academicYear'],
+            where: { tenantId },
+            _count: true,
+            _max: { appliedAt: true },
+            orderBy: { _max: { appliedAt: 'desc' } },
+            take: 3,
+        }),
+    ]);
+
+    return {
+        assessmentsByType: assessmentsByType.map((a) => ({
+            type: a.type,
+            count: a._count,
+        })),
+        riskDistribution: riskDistribution.map((r) => ({
+            tier: r.overallTier,
+            count: r._count,
+        })),
+        engagement: {
+            active: activeUsers,
+            total: totalUsers,
+            rate: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
+        },
+        monthlyAssessments: monthlyAssessments ?? [],
+        monthlyStudents: monthlyStudents ?? [],
+        recentWindows: recentScreeningWindows.map((w) => ({
+            window: w.screeningWindow,
+            academicYear: w.academicYear,
+            count: w._count,
+            lastAppliedAt: w._max.appliedAt?.toISOString() ?? null,
+        })),
+    };
+}

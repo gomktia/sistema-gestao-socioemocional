@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { requireSuperAdmin } from '@/lib/auth';
-import { getTenantDetails } from '@/app/actions/super-admin';
+import { getTenantDetails, getTenantAnalytics } from '@/app/actions/super-admin';
 import { TenantDetailClient } from './TenantDetailClient';
 
 export const metadata = {
@@ -19,6 +19,8 @@ export default async function EscolaDetailPage(props: {
         redirect('/super-admin/escolas');
     }
 
+    const analytics = await getTenantAnalytics(id);
+
     const serializedTenant = {
         ...result.tenant,
         createdAt: result.tenant.createdAt.toISOString(),
@@ -31,6 +33,7 @@ export default async function EscolaDetailPage(props: {
             usersByRole={result.usersByRole}
             riskDistribution={result.riskDistribution}
             lastActivity={result.lastActivity ? result.lastActivity.toISOString() : null}
+            analytics={analytics}
         />
     );
 }

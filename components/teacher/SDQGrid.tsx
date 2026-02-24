@@ -89,7 +89,7 @@ export function SDQGrid({ students, existingData, labels }: SDQGridProps) {
                             ...d,
                             [studentId]: {
                                 ...d[studentId],
-                                band: result.scores.totalDifficultiesBand,
+                                band: result.scores!.totalDifficultiesBand,
                                 isSaving: false,
                             }
                         }));

@@ -81,7 +81,7 @@ export function FamilySocioemotionalWizard({
                 const result = await saveFamilySocioemotionalAnswers(answers, studentId);
                 if (result.success && result.complete) {
                     toast.success('Percepção Familiar registrada com sucesso!');
-                    router.push('/responsavel/percepcao-familiar/resultado');
+                    router.push('/responsavel');
                     router.refresh();
                 } else if (result.error) {
                     setIsSaving(false);

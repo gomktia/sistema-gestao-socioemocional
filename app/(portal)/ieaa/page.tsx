@@ -48,7 +48,7 @@ export default async function IEAAPage() {
     });
 
     if (assessment?.processedScores) {
-        redirect('/ieaa-results');
+        redirect('/inicio');
     }
 
     const initialAnswers = (assessment?.rawAnswers as unknown as IEAARawAnswers) || {};

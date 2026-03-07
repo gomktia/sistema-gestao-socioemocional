@@ -68,8 +68,8 @@ export function SDQGrid({ students, existingData, labels }: SDQGridProps) {
     const handleCellClick = useCallback((studentId: string, itemNum: number) => {
         setData((prev) => {
             const studentData = prev[studentId] ?? { answers: {} };
-            const current = studentData.answers[itemNum];
-            const next = current === undefined ? 0 : (current + 1) % 3;
+            const current = studentData.answers[itemNum] ?? 0;
+            const next = (current + 1) % 3;
             const newAnswers = { ...studentData.answers, [itemNum]: next };
 
             const newData = {
@@ -166,8 +166,8 @@ export function SDQGrid({ students, existingData, labels }: SDQGridProps) {
                                         <div className="truncate max-w-[200px] text-sm tracking-tight">{student.name}</div>
                                     </td>
                                     {SDQ_ITEMS_BY_ID.map((item, idx) => {
-                                        const val = studentData.answers[item.id];
-                                        const style = val !== undefined ? VALUE_STYLES[val] : null;
+                                        const val = studentData.answers[item.id] ?? 0;
+                                        const style = VALUE_STYLES[val];
                                         return (
                                             <td key={item.id} className={cn(
                                                 "p-1 text-center border-b border-slate-50",
@@ -182,7 +182,7 @@ export function SDQGrid({ students, existingData, labels }: SDQGridProps) {
                                                             : 'bg-slate-50/50 border-slate-100 text-slate-300 hover:bg-slate-100 hover:border-slate-200',
                                                     )}
                                                 >
-                                                    {val ?? '-'}
+                                                    {val}
                                                 </button>
                                             </td>
                                         );

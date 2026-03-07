@@ -38,7 +38,7 @@ export default async function BigFivePage() {
     });
 
     if (assessment?.processedScores) {
-        redirect('/bigfive-results');
+        redirect('/inicio');
     }
 
     const initialAnswers = (assessment?.rawAnswers as unknown as BigFiveRawAnswers) || {};

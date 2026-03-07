@@ -53,7 +53,7 @@ export default async function ResponsavelSDQPage({ searchParams }: PageProps) {
 
     // If already complete, redirect to results
     if (existingSDQ?.processedScores) {
-        redirect(`/responsavel/sdq-results?filho=${student.id}`);
+        redirect(`/responsavel`);
     }
 
     const initialAnswers = (existingSDQ?.rawAnswers as Record<number, number>) || {};

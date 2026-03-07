@@ -79,7 +79,7 @@ export function SDQWizard({
                 const result = await saveSDQParentAnswers(answers, studentId);
                 if (result.success && result.complete) {
                     toast.success('Questionário SDQ finalizado com sucesso!');
-                    router.push('/responsavel/sdq-results');
+                    router.push('/responsavel');
                     router.refresh();
                 } else if (result.error) {
                     setIsSaving(false);

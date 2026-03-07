@@ -26,7 +26,6 @@ export function getNavForRole(role: string, organizationType?: string): NavItem[
                     { label: 'IEAA', href: '/ieaa', iconName: 'BookOpen' },
                 ]
             },
-            { label: 'Minhas Forças', href: '/minhas-forcas', iconName: 'Trophy' },
             { label: 'Perfil', href: '/configuracoes', iconName: 'Settings' },
         ],
         TEACHER: [

@@ -95,7 +95,7 @@ export async function saveVIAAnswers(answers: VIARawAnswers, targetStudentId?: s
         return { error: 'Erro ao salvar o questionário.' };
     }
 
-    revalidatePath('/minhas-forcas');
+    revalidatePath('/inicio');
     revalidatePath('/questionario');
 
     return {
@@ -242,7 +242,7 @@ export async function saveBigFiveAnswers(answers: BigFiveRawAnswers, targetStude
         return { error: 'Erro ao salvar Big Five.' };
     }
 
-    revalidatePath('/bigfive-results');
+    revalidatePath('/inicio');
     return { success: true, complete: isComplete, scores: processedScores };
 }
 
@@ -314,7 +314,7 @@ export async function saveIEAAAnswers(answers: IEAARawAnswers, targetStudentId?:
         return { error: 'Erro ao salvar IEAA.' };
     }
 
-    revalidatePath('/ieaa-results');
+    revalidatePath('/inicio');
     return { success: true, complete: isComplete, scores: processedScores };
 }
 
@@ -437,7 +437,7 @@ export async function saveSDQParentAnswers(answers: SDQRawAnswers, targetStudent
     }
 
     revalidatePath('/responsavel/sdq');
-    revalidatePath('/responsavel/sdq-results');
+    revalidatePath('/responsavel');
     return { success: true, complete: isComplete, scores: processedScores };
 }
 

@@ -1,13 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { UserRole, GradeLevel as CoreGradeLevel } from '@/src/core/types';
-import { calculateStudentProfile } from '@/src/core/logic/scoring';
-import { generateEvolutionNarrative, getHomeSuggestions } from '@/lib/report/family-report-helpers';
-import { STRENGTH_DESCRIPTIONS } from '@/src/core/content/strength-descriptions';
-import { StrengthsCard } from '@/components/guardian/StrengthsCard';
-import { EvolutionCard } from '@/components/guardian/EvolutionCard';
-import { SuggestionsCard } from '@/components/guardian/SuggestionsCard';
+import { UserRole } from '@/src/core/types';
 import { ChildSelector } from '@/components/guardian/ChildSelector';
 import { Heart, ClipboardCheck, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -82,76 +76,6 @@ export default async function ResponsavelPage({ searchParams }: PageProps) {
   const gradeDisplay =
     student.grade === 'ANO_1_EM' ? '1ª Série EM' :
     student.grade === 'ANO_2_EM' ? '2ª Série EM' : '3ª Série EM';
-
-  // Fetch assessments for this child
-  const allAssessments = await prisma.assessment.findMany({
-    where: { tenantId: user.tenantId, studentId: student.id },
-    select: {
-      type: true,
-      rawAnswers: true,
-      processedScores: true,
-      screeningWindow: true,
-      academicYear: true,
-      appliedAt: true,
-    },
-    orderBy: { appliedAt: 'asc' },
-  });
-
-  type AssessmentRow = (typeof allAssessments)[number];
-  const viaAnswers = allAssessments.find((a: AssessmentRow) => a.type === 'VIA_STRENGTHS')?.rawAnswers;
-  const srssAnswers = allAssessments.find((a: AssessmentRow) => a.type === 'SRSS_IE')?.rawAnswers;
-  const bigFiveScores = allAssessments.find((a: AssessmentRow) => a.type === 'BIG_FIVE')?.processedScores as any;
-
-  // Evolution data from SRSS-IE assessments
-  const evolutionData = allAssessments
-    .filter((a: AssessmentRow) => a.type === 'SRSS_IE')
-    .map((a: AssessmentRow) => ({
-      window: a.screeningWindow === 'DIAGNOSTIC' ? 'Marco' : a.screeningWindow === 'MONITORING' ? 'Junho' : 'Outubro',
-      externalizing: (a.processedScores as any)?.externalizing?.score || 0,
-      internalizing: (a.processedScores as any)?.internalizing?.score || 0,
-    }));
-
-  // Check if VIA assessment is complete (71 items)
-  const isViaComplete = viaAnswers && Object.keys(viaAnswers as object).length >= 71;
-
-  let profile = null;
-  if (isViaComplete && srssAnswers) {
-    const gradeMap: Record<string, CoreGradeLevel> = {
-      'ANO_1_EM': CoreGradeLevel.PRIMEIRO_ANO,
-      'ANO_2_EM': CoreGradeLevel.SEGUNDO_ANO,
-      'ANO_3_EM': CoreGradeLevel.TERCEIRO_ANO,
-    };
-
-    const coreGrade = gradeMap[student.grade] || CoreGradeLevel.PRIMEIRO_ANO;
-
-    profile = calculateStudentProfile(
-      viaAnswers as any,
-      srssAnswers as any,
-      coreGrade,
-      bigFiveScores
-    );
-  }
-
-  // Prepare strengths, evolution, and suggestions if profile is available
-  let strengths: { label: string; virtue: string; description: string }[] = [];
-  let evolutionNarrative = '';
-  let homeSuggestions: { strengthLabel: string; activities: string[] }[] = [];
-
-  if (profile) {
-    strengths = profile.signatureStrengths.map((s) => {
-      const desc = STRENGTH_DESCRIPTIONS[s.strength];
-      return {
-        label: s.label,
-        virtue: s.virtue,
-        description: desc?.description || '',
-      };
-    });
-
-    evolutionNarrative = generateEvolutionNarrative(evolutionData);
-    homeSuggestions = getHomeSuggestions(
-      profile.signatureStrengths.map((s) => ({ strength: s.strength, label: s.label }))
-    );
-  }
 
   // Check for existing parent SDQ
   const parentSDQ = await prisma.assessment.findFirst({
@@ -236,16 +160,14 @@ export default async function ResponsavelPage({ searchParams }: PageProps) {
               </p>
             </div>
           </div>
-          <Link
-            href={sdqComplete ? `/responsavel/sdq-results?filho=${filhoParam}` : `/responsavel/sdq?filho=${filhoParam}`}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-              sdqComplete
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                : 'bg-teal-600 text-white hover:bg-teal-700 shadow-sm'
-            }`}
-          >
-            {sdqComplete ? 'Ver Resultados' : 'Responder SDQ'}
-          </Link>
+          {!sdqComplete && (
+            <Link
+              href={`/responsavel/sdq?filho=${filhoParam}`}
+              className="px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 bg-teal-600 text-white hover:bg-teal-700 shadow-sm"
+            >
+              Responder SDQ
+            </Link>
+          )}
         </div>
       </div>
 
@@ -267,43 +189,29 @@ export default async function ResponsavelPage({ searchParams }: PageProps) {
               </p>
             </div>
           </div>
-          <Link
-            href={familyComplete ? `/responsavel/percepcao-familiar/resultado?filho=${filhoParam}` : `/responsavel/percepcao-familiar?filho=${filhoParam}`}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-              familyComplete
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                : 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
-            }`}
-          >
-            {familyComplete ? 'Ver Resultados' : 'Responder'}
-          </Link>
+          {!familyComplete && (
+            <Link
+              href={`/responsavel/percepcao-familiar?filho=${filhoParam}`}
+              className="px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
+            >
+              Responder
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Main content */}
-      {!profile ? (
-        <div className="bg-slate-50 rounded-2xl p-12 text-center border-2 border-dashed border-slate-200">
-          <h3 className="text-slate-500 font-bold mb-2">Avaliações em Andamento</h3>
-          <p className="text-slate-400 text-sm max-w-sm mx-auto">
-            As avaliações do(a) {student.name} ainda estão sendo realizadas.
-            Assim que forem concluídas, você poderá visualizar as forças de caráter,
-            evolução e sugestões de atividades para casa.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left column: Strengths */}
-          <div>
-            <StrengthsCard strengths={strengths} />
-          </div>
-
-          {/* Right column: Evolution + Suggestions */}
-          <div className="space-y-6">
-            <EvolutionCard narrative={evolutionNarrative} />
-            <SuggestionsCard suggestions={homeSuggestions} />
-          </div>
-        </div>
-      )}
+      {/* Informational message */}
+      <div className="bg-slate-50 rounded-2xl p-8 border border-slate-200">
+        <h3 className="text-slate-700 font-bold mb-2">Como funciona?</h3>
+        <p className="text-slate-500 text-sm leading-relaxed max-w-lg">
+          As informações coletadas nos questionários são ferramentas internas da escola
+          para auxiliar no desenvolvimento do(a) seu(sua) filho(a). A equipe pedagógica
+          utilizará esses dados para melhorar o ambiente e o acompanhamento escolar.
+        </p>
+        <p className="text-slate-400 text-xs mt-3">
+          Caso deseje acessar os resultados, você pode solicitar formalmente junto à coordenação da escola (LGPD).
+        </p>
+      </div>
 
       {/* School contact info */}
       <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">

@@ -84,7 +84,7 @@ export function IEAAWizard({
 
                 if (result.success && result.complete) {
                     toast.success('Questionário finalizado com sucesso!');
-                    router.push('/ieaa-results');
+                    router.push('/inicio');
                     router.refresh();
                 } else if (result.error) {
                     setIsSaving(false);

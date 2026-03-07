@@ -91,7 +91,7 @@ export function QuestionnaireWizard({
 
                 if (result.success && result.complete) {
                     toast.success('Questionário finalizado com sucesso!');
-                    router.push('/minhas-forcas');
+                    router.push('/inicio');
                     router.refresh();
                 } else if (result.error) {
                     setIsSaving(false);

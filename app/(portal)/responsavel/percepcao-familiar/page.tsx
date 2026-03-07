@@ -53,7 +53,7 @@ export default async function PercepcaoFamiliarPage({ searchParams }: PageProps)
 
     // If already complete, redirect to results
     if (existing?.processedScores) {
-        redirect(`/responsavel/percepcao-familiar/resultado?filho=${student.id}`);
+        redirect(`/responsavel`);
     }
 
     const initialAnswers = (existing?.rawAnswers as Record<number, number>) || {};

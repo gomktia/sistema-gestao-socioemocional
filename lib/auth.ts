@@ -114,7 +114,7 @@ export async function getCurrentUser(): Promise<AppUser | null> {
  * Mapeia cada Role para sua página inicial padrão.
  */
 const ROLE_HOME: Record<string, string> = {
-    STUDENT: '/minhas-forcas',
+    STUDENT: '/inicio',
     RESPONSIBLE: '/responsavel',
     TEACHER: '/inicio',
     PSYCHOLOGIST: '/inicio',
@@ -132,11 +132,8 @@ export function getHomeForRole(role: string): string {
  */
 const ROUTE_ACCESS: Record<string, string[]> = {
     '/questionario': ['STUDENT'],
-    '/minhas-forcas': ['STUDENT'],
     '/bigfive': ['STUDENT'],
-    '/bigfive-results': ['STUDENT'],
     '/ieaa': ['STUDENT'],
-    '/ieaa-results': ['STUDENT'],
     '/minha-voz': ['STUDENT'],
     '/turma': ['TEACHER', 'MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR'],
     '/turmas': ['TEACHER', 'MANAGER', 'ADMIN', 'PSYCHOLOGIST', 'COUNSELOR'],

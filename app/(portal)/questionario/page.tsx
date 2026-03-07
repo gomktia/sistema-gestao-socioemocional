@@ -88,7 +88,7 @@ export default async function QuestionarioPage() {
     });
 
     if (assessment?.processedScores) {
-        redirect('/minhas-forcas');
+        redirect('/inicio');
     }
 
     const initialAnswers = (assessment?.rawAnswers as VIARawAnswers) || {};

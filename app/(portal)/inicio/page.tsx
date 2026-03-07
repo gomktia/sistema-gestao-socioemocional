@@ -300,7 +300,7 @@ export default async function InicioPage() {
                             </div>
                         </Link>
 
-                        <Link href={isStudent ? "/minhas-forcas" : "/intervencoes"} className="group">
+                        <Link href={isStudent ? "/questionario" : "/intervencoes"} className="group">
                             <div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-2xl hover:ring-1 hover:ring-purple-500/10 transition-all duration-300">
                                 <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                     {isStudent ? <Star size={24} strokeWidth={1.5} /> : <TrendingUp size={24} strokeWidth={1.5} />}
@@ -326,7 +326,7 @@ export default async function InicioPage() {
                     <h3 className="text-sm font-extrabold text-slate-400 uppercase tracking-widest">
                         {isStudent ? 'Meu Plano de Ação' : 'Painel de Impacto'}
                     </h3>
-                    <Link href={isStudent ? "/minhas-forcas" : "/gestao"} className="block group">
+                    <Link href={isStudent ? "/questionario" : "/gestao"} className="block group">
                         <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-2xl hover:ring-1 hover:ring-emerald-500/10 transition-all duration-300 h-full min-h-[220px] flex flex-col justify-center relative overflow-hidden">
                             <div className="relative z-10">
                                 <h4 className="text-xl font-black text-slate-900 mb-2 tracking-tight">
@@ -363,7 +363,7 @@ export default async function InicioPage() {
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             <Link
-                                href="/minhas-forcas"
+                                href="/configuracoes"
                                 className="flex items-center gap-2 bg-white px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 border border-slate-200 hover:bg-slate-50 transition-all"
                             >
                                 <Download size={14} />

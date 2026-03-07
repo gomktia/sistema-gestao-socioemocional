@@ -89,9 +89,6 @@ export function BigFiveStatus({ scores, studentName }: { scores: any[], studentN
                     <CardContent className="p-6 flex flex-col justify-center h-full">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumo dos Domínios</span>
-                            <Link href="/bigfive-results" className="text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-wide">
-                                Ver Relatório Completo →
-                            </Link>
                         </div>
                         <div className="space-y-3">
                             {scores.slice(0, 3).map((s, i) => (
